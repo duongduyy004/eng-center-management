@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  eng-center-db:
+    image: mongo
+    container_name: eng-center-db
+    restart: unless-stopped
+    ports:
+      - '28019:28019'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 123456
+    command: [ "mongod", "--port", "28019" ]
+    volumes:
+      - dbdata:/data/db
+    networks:
+      - node-network
+
+volumes:
+  dbdata:
+
+
+networks:
+  node-network:
+    driver: bridge

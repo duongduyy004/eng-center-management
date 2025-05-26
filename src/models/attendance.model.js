@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const { softDelete } = require('./plugins')
+const { softDelete, toJSON } = require('./plugins')
 
 const attendanceSchema = new mongoose.Schema({
     date: Date,
@@ -16,6 +16,8 @@ const attendanceSchema = new mongoose.Schema({
     }
 )
 
+attendanceSchema.plugin(toJSON)
+attendanceSchema.plugin(softDelete)
 
 const Attendance = mongoose.model('Attendance', attendanceSchema)
 

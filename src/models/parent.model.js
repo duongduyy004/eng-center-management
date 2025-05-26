@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { softDelete } = require('./plugins');
+const { softDelete, toJSON } = require('./plugins');
 
 const parentSchema = new mongoose.Schema({
     studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' },
@@ -14,7 +14,8 @@ const parentSchema = new mongoose.Schema({
     }
 );
 
-
+parentSchema.plugin(toJSON)
+parentSchema.plugin(softDelete)
 
 const Parent = mongoose.model('Parent', parentSchema)
 

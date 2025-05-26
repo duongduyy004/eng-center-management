@@ -15,6 +15,7 @@ const studentSchema = new mongoose.Schema({
 
 studentSchema.plugin(toJSON);
 studentSchema.plugin(paginate);
+studentSchema.plugin(softDelete)
 
 const Student = mongoose.model('Student', studentSchema)
 

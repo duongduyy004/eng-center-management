@@ -10,7 +10,6 @@ const classSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-
     status: {
         type: Boolean,
         default: true
@@ -32,6 +31,7 @@ const classSchema = new mongoose.Schema({
 
 classSchema.plugin(toJSON)
 classSchema.plugin(paginate);
+classSchema.plugin(softDelete)
 
 const Class = mongoose.model('Class', classSchema)
 

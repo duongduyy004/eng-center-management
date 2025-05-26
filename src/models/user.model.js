@@ -40,6 +40,8 @@ const userSchema = mongoose.Schema(
       enum: roles,
       default: 'user',
     },
+    dayOfBirth: Date,
+    phone: String,
     isEmailVerified: {
       type: Boolean,
       default: false,
@@ -53,6 +55,7 @@ const userSchema = mongoose.Schema(
 // add plugin that converts mongoose to json
 userSchema.plugin(toJSON);
 userSchema.plugin(paginate);
+userSchema.plugin(softDelete)
 
 /**
  * Check if email is taken

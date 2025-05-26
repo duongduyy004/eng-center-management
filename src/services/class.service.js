@@ -12,6 +12,13 @@ const getClassByNameAndYear = async (name, year) => {
     return aClass
 }
 
+const getClassById = async (classId) => {
+    const aClass = await Class.findById(classId)
+    if (!aClass) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Class not found')
+    }
+}
+
 /**
  * Create a class
  * @param {Object} classBody
@@ -44,5 +51,6 @@ const updateClass = async (classId, classUpdate) => {
 module.exports = {
     queryClasses,
     createClass,
-    updateClass
+    updateClass,
+    getClassById
 }

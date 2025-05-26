@@ -9,31 +9,44 @@ const { getStudentById } = require("../services/student.service");
 const createStudent = catchAsync(async (req, res) => {
     const { studentData, parentData } = req.body
     //check if class was closed
-    if (await Class.findById(studentData.classId).status === 'CLOSE') {
+    if (studentData.classId && await Class.findById(studentData.classId).status === 'CLOSE') {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Class was closed')
     }
 
-    const parent = await parentService.createParent({ studentIds: [], unpaid: 0, })
+    //creater user for student and parent
+    const studentUser = await userService.createUser({
+        email: studentData.email,
+        password: studentData.password,
+        name: studentData.name,
+        role: studentData.role,
+        dayOfBirth: studentData.dayOfBirth,
+        phone: studentData?.phone
+    })
+    const parentUser = await userService.createUser({
+        email: parentData.parent_email,
+        password: parentData.parent_password,
+        name: parentData.parent_name,
+        role: parentData.role,
+        dayOfBirth: parentData.dayOfBirth,
+        phone: studentData?.phone
+    })
+
+
+    const parent = await parentService.createParent({ userId: parentUser.id })
     const student = await studentService.createStudent({
         classId: studentData?.classId,
         parentId: parent?.id,
-        attended: 0,
-        absent: 0,
-        absentDates: [],
-        fee: studentData.fee || 0,
-        discount: studentData.discount || 0
+        userId: studentUser.id,
+        discountPercentage: studentData.discountPercentage
     })
 
     //update studentId in Parent collection
     await parent.updateOne({ studentId: student.id })
     //update studentIds in Class collection
     if (studentData.classId) {
-        await Class.updateOne({ _id: studentData.classId, status: 'OPEN' }, { $push: { studentIds: student.id } })
+        await Class.updateOne({ _id: studentData.classId, status: true }, { $push: { studentIds: student.id } })
     }
 
-    //creater user for student and parent
-    await userService.createUser({ email: studentData.email, password: studentData.password, name: studentData.name, profileId: student.id })
-    await userService.createUser({ email: parentData.parent_email, password: parentData.parent_password, name: parentData.parent_name, profileId: parent.id })
     res.status(httpStatus.CREATED).json({
         message: 'Create student successfully'
     })
@@ -48,13 +61,23 @@ const getStudents = catchAsync(async (req, res) => {
 
 const getStudent = catchAsync(async (req, res) => {
     const { populate } = req.query
-    const user = await userService.getUserById(req.params.userId)
-    const student = await getStudentById(user.profileId, populate)
+    const student = await getStudentById(req.params.studentId, populate)
     res.send(student)
+})
+
+const updateStudent = catchAsync(async (req, res) => {
+    const student = await studentService.updateStudentById(req.params.studentId, req.body)
+    res.send(student)
+})
+
+const deleteStudent = catchAsync(async (req, res) => {
+    res.send('delete student')
 })
 
 module.exports = {
     createStudent,
     getStudents,
-    getStudent
+    getStudent,
+    updateStudent,
+    deleteStudent
 }

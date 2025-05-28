@@ -42,6 +42,7 @@ const userSchema = mongoose.Schema(
     },
     dayOfBirth: Date,
     phone: String,
+    address: String,
     isEmailVerified: {
       type: Boolean,
       default: false,
@@ -55,7 +56,7 @@ const userSchema = mongoose.Schema(
 // add plugin that converts mongoose to json
 userSchema.plugin(toJSON);
 userSchema.plugin(paginate);
-userSchema.plugin(softDelete)
+userSchema.plugin(softDelete, { overrideMethods: true })
 
 /**
  * Check if email is taken

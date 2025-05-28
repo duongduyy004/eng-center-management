@@ -3,10 +3,31 @@ const mongoose = require('mongoose');
 const { toJSON, paginate, softDelete } = require('./plugins');
 
 const studentSchema = new mongoose.Schema({
-    discountPercentage: Number,
-    classId: { type: mongoose.Schema.Types.ObjectId, ref: 'Class' },
-    parentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Parent' },
-    userId: { type: mongoose.Types.ObjectId, ref: 'User' }
+    userId: { type: mongoose.Types.ObjectId, ref: 'User', required: true },
+    parentIds: { type: mongoose.Schema.Types.ObjectId, ref: 'Parent' },
+    classes: [{
+        classId: { type: mongoose.Schema.Types.ObjectId, ref: 'Class' },
+        discountPercent: {
+            type: Number,
+            default: 0,
+            min: 0,
+            max: 100
+        },
+        enrollmentDate: {
+            type: Date,
+            default: Date.now
+        },
+        status: {
+            type: String,
+            enum: ['active', 'inactive', 'completed'],
+            default: 'active'
+        }
+    }],
+    emergencyContact: {
+        name: String,
+        phone: String,
+        relationship: String
+    }
 },
     {
         timestamps: true,
@@ -15,7 +36,7 @@ const studentSchema = new mongoose.Schema({
 
 studentSchema.plugin(toJSON);
 studentSchema.plugin(paginate);
-studentSchema.plugin(softDelete)
+studentSchema.plugin(softDelete, { overrideMethods: true })
 
 const Student = mongoose.model('Student', studentSchema)
 

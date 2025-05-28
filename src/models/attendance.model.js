@@ -1,15 +1,38 @@
 const mongoose = require('mongoose')
-const { softDelete, toJSON } = require('./plugins')
+const { softDelete, toJSON, paginate } = require('./plugins')
 
 const attendanceSchema = new mongoose.Schema({
-    date: Date,
-    classId: { type: mongoose.Types.ObjectId, ref: 'Class' },
-    attendance: [
+    classId: { type: mongoose.Types.ObjectId, ref: 'Class', required: true },
+    date: {
+        type: Date,
+        required: true
+    },
+    lessonNumber: {
+        type: Number,
+        required: true
+    },
+    teacherId: { type: mongoose.Types.ObjectId, ref: 'Teacher', required: true },
+    students: [
         {
-            studentId: { type: mongoose.Types.ObjectId, ref: 'Student' },
-            isAbsent: Boolean
+            studentId: { type: mongoose.Types.ObjectId, ref: 'Student', required: true },
+            status: {
+                type: String,
+                enum: ['present', 'absent', 'late', 'excused'],
+                required: true
+            },
+            note: String,
+            checkedAt: {
+                type: Date,
+                default: Date.now
+            }
         }
-    ]
+    ],
+    topic: String, // Chủ đề bài học
+    notes: String, // Ghi chú của giáo viên
+    isCompleted: {
+        type: Boolean,
+        default: false
+    }
 },
     {
         timestamps: true,
@@ -17,7 +40,8 @@ const attendanceSchema = new mongoose.Schema({
 )
 
 attendanceSchema.plugin(toJSON)
-attendanceSchema.plugin(softDelete)
+attendanceSchema.plugin(paginate);
+attendanceSchema.plugin(softDelete, { overrideMethods: true })
 
 const Attendance = mongoose.model('Attendance', attendanceSchema)
 

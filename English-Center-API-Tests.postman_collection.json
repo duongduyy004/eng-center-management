@@ -1,0 +1,2442 @@
+{
+    "info": {
+        "_postman_id": "english-center-api-tests",
+        "name": "English Center Management API Tests",
+        "description": "Comprehensive API testing collection for English Center Management System",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{authToken}}",
+                "type": "string"
+            }
+        ]
+    },
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        }
+    ],
+    "variable": [        {
+            "key": "baseUrl",
+            "value": "http://localhost:3000/api/v1",
+            "type": "string"
+        },
+        {
+            "key": "authToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "adminId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "teacherId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "studentId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "parentId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "classId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "paymentId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "enrollmentId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "attendanceId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "announcementId",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Register Admin",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('adminId', response.user.id);",
+                                    "    pm.collectionVariables.set('authToken', response.tokens.access.token);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Admin User\",\n    \"email\": \"admin@example.com\",\n    \"password\": \"password123\",\n    \"role\": \"admin\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('authToken', response.tokens.access.token);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Refresh Token",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/refresh-tokens",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "refresh-tokens"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/logout",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "logout"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Users",
+            "item": [
+                {
+                    "name": "Create User",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"testuser@example.com\",\n    \"password\": \"password123\",\n    \"role\": \"admin\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get User by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/{{adminId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "{{adminId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update User",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Updated User Name\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/users/{{adminId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "{{adminId}}"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Teachers",
+            "item": [
+                {
+                    "name": "Create Teacher",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('teacherId', response.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"userData\": {\n        \"name\": \"John Teacher\",\n        \"email\": \"teacher@example.com\",\n        \"password\": \"password123\",\n        \"phone\": \"+1234567890\",\n        \"dayOfBirth\": \"1985-05-15\",\n        \"address\": \"123 Teacher St\"\n    },\n    \"teacherData\": {\n        \"salaryPerLesson\": 50000,\n        \"qualifications\": [\"TESOL\", \"Bachelor's in English\"],\n        \"experience\": \"5 years\",\n        \"specialization\": [\"Speaking\", \"Grammar\"],\n        \"description\": \"Experienced English teacher with focus on conversation\"\n    }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/teachers",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "teachers"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Teachers",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/teachers",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "teachers"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Teacher by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/teachers/{{teacherId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "teachers",
+                                "{{teacherId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Teacher",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"hourlyRate\": 30,\n    \"maxClassesPerWeek\": 25\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/teachers/{{teacherId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "teachers",
+                                "{{teacherId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Teacher Classes",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/teachers/{{teacherId}}/classes",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "teachers",
+                                "{{teacherId}}",
+                                "classes"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Teacher Schedule",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/teachers/{{teacherId}}/schedule",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "teachers",
+                                "{{teacherId}}",
+                                "schedule"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Teacher Performance",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/teachers/{{teacherId}}/performance",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "teachers",
+                                "{{teacherId}}",
+                                "performance"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Teacher Payments",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/teachers/{{teacherId}}/payments",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "teachers",
+                                "{{teacherId}}",
+                                "payments"
+                            ]
+                        }
+                    }
+                },                {
+                    "name": "Update Teacher Availability",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"availability\": {\n        \"monday\": [\"09:00-12:00\", \"14:00-18:00\"],\n        \"tuesday\": [\"09:00-12:00\", \"14:00-18:00\"],\n        \"wednesday\": [\"09:00-12:00\", \"14:00-18:00\"],\n        \"thursday\": [\"09:00-12:00\", \"14:00-18:00\"],\n        \"friday\": [\"09:00-12:00\", \"14:00-18:00\"],\n        \"saturday\": [\"09:00-12:00\"]\n    }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/teachers/{{teacherId}}/availability",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "teachers",
+                                "{{teacherId}}",
+                                "availability"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get My Teacher Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/teachers/me/profile",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "teachers",
+                                "me",
+                                "profile"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update My Teacher Profile",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"salaryPerLesson\": 55000,\n    \"description\": \"Updated teacher description\",\n    \"specialization\": [\"Speaking\", \"Grammar\", \"IELTS\"]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/teachers/me/profile",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "teachers",
+                                "me",
+                                "profile"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get My Classes",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/teachers/me/classes",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "teachers",
+                                "me",
+                                "classes"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get My Attendance",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/teachers/me/attendance",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "teachers",
+                                "me",
+                                "attendance"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Attendance Record",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"classId\": \"{{classId}}\",\n    \"date\": \"2025-05-28\",\n    \"attendanceRecords\": [\n        {\n            \"studentId\": \"{{studentId}}\",\n            \"status\": \"present\",\n            \"notes\": \"Active participation\"\n        }\n    ]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/teachers/me/attendance",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "teachers",
+                                "me",
+                                "attendance"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get My Payments",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/teachers/me/payments",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "teachers",
+                                "me",
+                                "payments"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Teaching Stats",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/teachers/me/stats",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "teachers",
+                                "me",
+                                "stats"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Class Students",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/teachers/me/classes/{{classId}}/students",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "teachers",
+                                "me",
+                                "classes",
+                                "{{classId}}",
+                                "students"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Students",
+            "item": [
+                {
+                    "name": "Create Student",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('studentId', response.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"userData\": {\n        \"name\": \"Jane Student\",\n        \"email\": \"student@example.com\",\n        \"password\": \"password123\",\n        \"phone\": \"+1234567891\",\n        \"dayOfBirth\": \"2005-08-20\",\n        \"address\": \"456 Student Ave\"\n    },\n    \"studentData\": {\n        \"level\": \"Intermediate\",\n        \"emergencyContact\": {\n            \"name\": \"Parent Name\",\n            \"phone\": \"+1234567892\",\n            \"relationship\": \"Parent\"\n        }\n    }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/students",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "students"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Students",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/students",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "students"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Student by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/students/{{studentId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "students",
+                                "{{studentId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Student",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"level\": \"Advanced\",\n    \"phone\": \"+1234567899\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/students/{{studentId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "students",
+                                "{{studentId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Student Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/students/{{studentId}}/profile",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "students",
+                                "{{studentId}}",
+                                "profile"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Student Classes",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/students/{{studentId}}/classes",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "students",
+                                "{{studentId}}",
+                                "classes"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Student Attendance",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/students/{{studentId}}/attendance",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "students",
+                                "{{studentId}}",
+                                "attendance"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Student Payments",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/students/{{studentId}}/payments",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "students",
+                                "{{studentId}}",
+                                "payments"
+                            ]
+                        }
+                    }
+                },                {
+                    "name": "Get Student Schedule",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/students/{{studentId}}/schedule",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "students",
+                                "{{studentId}}",
+                                "schedule"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Student Profile",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"level\": \"Advanced\",\n    \"emergencyContact\": {\n        \"name\": \"Updated Parent Name\",\n        \"phone\": \"+1234567899\",\n        \"relationship\": \"Mother\"\n    }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/students/{{studentId}}/profile",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "students",
+                                "{{studentId}}",
+                                "profile"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Student Progress",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/students/{{studentId}}/progress",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "students",
+                                "{{studentId}}",
+                                "progress"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Student Statistics",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/students/{{studentId}}/statistics",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "students",
+                                "{{studentId}}",
+                                "statistics"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Student Announcements",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/students/{{studentId}}/announcements",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "students",
+                                "{{studentId}}",
+                                "announcements"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Enroll Student",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"classId\": \"{{classId}}\",\n    \"enrollmentDate\": \"2025-05-28\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/students/{{studentId}}/enrollment",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "students",
+                                "{{studentId}}",
+                                "enrollment"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Parents",
+            "item": [
+                {
+                    "name": "Create Parent",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('parentId', response.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"userData\": {\n        \"name\": \"John Parent\",\n        \"email\": \"parent@example.com\",\n        \"password\": \"password123\",\n        \"phone\": \"+1234567893\",\n        \"dayOfBirth\": \"1975-03-10\",\n        \"address\": \"789 Parent Blvd\"\n    },\n    \"parentData\": {\n        \"occupation\": \"Engineer\",\n        \"emergencyContact\": {\n            \"name\": \"Emergency Contact\",\n            \"phone\": \"+1234567894\",\n            \"relationship\": \"Spouse\"\n        }\n    }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/parents",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "parents"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Parents",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/parents",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "parents"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Parent by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/parents/{{parentId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "parents",
+                                "{{parentId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Add Child to Parent",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"studentId\": \"{{studentId}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/parents/{{parentId}}/children",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "parents",
+                                "{{parentId}}",
+                                "children"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Parent Children",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/parents/{{parentId}}/children",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "parents",
+                                "{{parentId}}",
+                                "children"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Children Attendance",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/parents/{{parentId}}/children/attendance",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "parents",
+                                "{{parentId}}",
+                                "children",
+                                "attendance"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Children Payments",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/parents/{{parentId}}/children/payments",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "parents",
+                                "{{parentId}}",
+                                "children",
+                                "payments"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Classes",
+            "item": [
+                {
+                    "name": "Create Class",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('classId', response.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Intermediate English\",\n    \"description\": \"Intermediate level English class for adults\",\n    \"level\": \"Intermediate\",\n    \"teacherId\": \"{{teacherId}}\",\n    \"schedule\": {\n        \"dayOfWeek\": \"Monday\",\n        \"startTime\": \"09:00\",\n        \"endTime\": \"11:00\"\n    },\n    \"startDate\": \"2024-01-15\",\n    \"endDate\": \"2024-06-15\",\n    \"capacity\": 15,\n    \"fee\": 500,\n    \"room\": \"Room A1\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/classes",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "classes"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Classes",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/classes",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "classes"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Class by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/classes/{{classId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "classes",
+                                "{{classId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Class",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"capacity\": 20,\n    \"fee\": 550\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/classes/{{classId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "classes",
+                                "{{classId}}"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Enrollment",
+            "item": [
+                {
+                    "name": "Create Enrollment",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('enrollmentId', response.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"studentId\": \"{{studentId}}\",\n    \"classId\": \"{{classId}}\",\n    \"enrollmentDate\": \"2024-01-10\",\n    \"status\": \"active\",\n    \"notes\": \"Regular enrollment\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/enrollment",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "enrollment"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Enrollments",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/enrollment",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "enrollment"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Enrollment by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/enrollment/{{enrollmentId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "enrollment",
+                                "{{enrollmentId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Bulk Enrollment",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"studentIds\": [\"{{studentId}}\"],\n    \"classId\": \"{{classId}}\",\n    \"enrollmentDate\": \"2024-01-10\",\n    \"status\": \"active\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/enrollment/bulk/enroll",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "enrollment",
+                                "bulk",
+                                "enroll"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Transfer Student",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"studentId\": \"{{studentId}}\",\n    \"fromClassId\": \"{{classId}}\",\n    \"toClassId\": \"{{classId}}\",\n    \"transferDate\": \"2024-02-01\",\n    \"reason\": \"Student requested transfer\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/enrollment/transfer",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "enrollment",
+                                "transfer"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Class Enrollments",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/enrollment/class/{{classId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "enrollment",
+                                "class",
+                                "{{classId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Add to Waitlist",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"classId\": \"{{classId}}\",\n    \"priority\": 1,\n    \"notes\": \"Waiting for available spot\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/enrollment/student/{{studentId}}/waitlist",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "enrollment",
+                                "student",
+                                "{{studentId}}",
+                                "waitlist"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Payments",
+            "item": [
+                {
+                    "name": "Create Payment",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('paymentId', response.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"studentId\": \"{{studentId}}\",\n    \"amount\": 500,\n    \"type\": \"tuition\",\n    \"method\": \"card\",\n    \"description\": \"Monthly tuition payment\",\n    \"dueDate\": \"2024-02-01\",\n    \"classId\": \"{{classId}}\",\n    \"status\": \"paid\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/payments",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payments"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Payments",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/payments",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payments"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Payment by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/payments/{{paymentId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "{{paymentId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Process Payment",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"paymentId\": \"{{paymentId}}\",\n    \"amount\": 500,\n    \"method\": \"card\",\n    \"reference\": \"TXN123456\",\n    \"notes\": \"Payment processed successfully\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/payments/process",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "process"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Record Payment",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"studentId\": \"{{studentId}}\",\n    \"amount\": 250,\n    \"type\": \"materials\",\n    \"method\": \"cash\",\n    \"description\": \"Textbook payment\",\n    \"classId\": \"{{classId}}\",\n    \"reference\": \"CASH001\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/payments/record",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "record"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Payment Statistics",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/payments/statistics",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "statistics"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Overdue Payments",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/payments/overdue",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "overdue"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Generate Invoice",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"studentId\": \"{{studentId}}\",\n    \"items\": [\n        {\n            \"description\": \"Monthly tuition\",\n            \"amount\": 500,\n            \"type\": \"tuition\",\n            \"classId\": \"{{classId}}\"\n        }\n    ],\n    \"dueDate\": \"2024-03-01\",\n    \"notes\": \"Payment due by end of month\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/payments/invoice",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "invoice"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Attendance",
+            "item": [
+                {
+                    "name": "Mark Attendance",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('attendanceId', response.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"classId\": \"{{classId}}\",\n    \"studentId\": \"{{studentId}}\",\n    \"date\": \"2024-01-15\",\n    \"status\": \"present\",\n    \"notes\": \"Student was on time\",\n    \"arrivalTime\": \"09:00\",\n    \"departureTime\": \"11:00\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/attendance/mark",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "attendance",
+                                "mark"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Bulk Mark Attendance",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"classId\": \"{{classId}}\",\n    \"date\": \"2024-01-16\",\n    \"attendanceRecords\": [\n        {\n            \"studentId\": \"{{studentId}}\",\n            \"status\": \"present\",\n            \"arrivalTime\": \"09:00\",\n            \"departureTime\": \"11:00\"\n        }\n    ]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/attendance/bulk",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "attendance",
+                                "bulk"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Attendance",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/attendance",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "attendance"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Class Attendance",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/attendance/class/{{classId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "attendance",
+                                "class",
+                                "{{classId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Student Attendance",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/attendance/student/{{studentId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "attendance",
+                                "student",
+                                "{{studentId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Attendance Statistics",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/attendance/statistics",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "attendance",
+                                "statistics"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Attendance Report",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/attendance/report?startDate=2024-01-01&endDate=2024-01-31",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "attendance",
+                                "report"
+                            ],
+                            "query": [
+                                {
+                                    "key": "startDate",
+                                    "value": "2024-01-01"
+                                },
+                                {
+                                    "key": "endDate",
+                                    "value": "2024-01-31"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Absentee Report",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/attendance/absentees",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "attendance",
+                                "absentees"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Announcements",
+            "item": [
+                {
+                    "name": "Create Announcement",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('announcementId', response.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"Welcome to New Semester\",\n    \"content\": \"We are excited to announce the start of our new semester. Please check your class schedules and be ready for an amazing learning experience!\",\n    \"type\": \"general\",\n    \"priority\": \"medium\",\n    \"targetAudience\": {\n        \"roles\": [\"student\", \"parent\"],\n        \"classIds\": [\"{{classId}}\"]\n    },\n    \"expirationDate\": \"2024-02-15\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/announcements",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "announcements"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Announcements",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/announcements",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "announcements"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Announcement by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/announcements/{{announcementId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "announcements",
+                                "{{announcementId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Announcement",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"Updated: Welcome to New Semester\",\n    \"priority\": \"high\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/announcements/{{announcementId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "announcements",
+                                "{{announcementId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Publish Announcement",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/announcements/{{announcementId}}/publish",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "announcements",
+                                "{{announcementId}}",
+                                "publish"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Schedule Announcement",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"scheduledDate\": \"2024-02-01T09:00:00Z\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/announcements/{{announcementId}}/schedule",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "announcements",
+                                "{{announcementId}}",
+                                "schedule"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Mark as Read",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"userId\": \"{{studentId}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/announcements/{{announcementId}}/read",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "announcements",
+                                "{{announcementId}}",
+                                "read"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get User Announcements",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/announcements/user/{{studentId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "announcements",
+                                "user",
+                                "{{studentId}}"
+                            ]
+                        }
+                    }
+                },                {
+                    "name": "Get Class Announcements",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/announcements/class/{{classId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "announcements",
+                                "class",
+                                "{{classId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Schedule Announcement (New)",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"Scheduled Announcement\",\n    \"content\": \"This is a scheduled announcement for future delivery\",\n    \"type\": \"general\",\n    \"priority\": \"medium\",\n    \"targetAudience\": {\n        \"roles\": [\"student\"]\n    },\n    \"scheduledDate\": \"2025-06-01T10:00:00Z\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/announcements/schedule",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "announcements",
+                                "schedule"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Activate Announcement",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/announcements/{{announcementId}}/activate",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "announcements",
+                                "{{announcementId}}",
+                                "activate"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Deactivate Announcement",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/announcements/{{announcementId}}/deactivate",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "announcements",
+                                "{{announcementId}}",
+                                "deactivate"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get My Active Announcements",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/announcements/me/active",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "announcements",
+                                "me",
+                                "active"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Mark Announcement as Read (Updated)",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/announcements/{{announcementId}}/read",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "announcements",
+                                "{{announcementId}}",
+                                "read"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Increment Announcement View",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/announcements/{{announcementId}}/view",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "announcements",
+                                "{{announcementId}}",
+                                "view"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Announcements by Type",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/announcements/type/general",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "announcements",
+                                "type",
+                                "general"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Announcement Statistics",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/announcements/{{announcementId}}/stats",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "announcements",
+                                "{{announcementId}}",
+                                "stats"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Announcement Metrics Overview",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/announcements/metrics/overview",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "announcements",
+                                "metrics",
+                                "overview"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Statistics",
+            "item": [
+                {
+                    "name": "Get Dashboard Stats",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/statistics/dashboard",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "statistics",
+                                "dashboard"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Revenue Statistics",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/statistics/revenue",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "statistics",
+                                "revenue"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Student Statistics",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/statistics/students",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "statistics",
+                                "students"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Teacher Statistics",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/statistics/teachers",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "statistics",
+                                "teachers"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Class Statistics",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/statistics/classes",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "statistics",
+                                "classes"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Attendance Statistics",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/statistics/attendance",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "statistics",
+                                "attendance"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Payment Statistics",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/statistics/payments",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "statistics",
+                                "payments"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Generate Report",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"reportType\": \"comprehensive\",\n    \"startDate\": \"2024-01-01\",\n    \"endDate\": \"2024-01-31\",\n    \"format\": \"json\",\n    \"includeCharts\": true,\n    \"includeComparisons\": true\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/statistics/reports",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "statistics",
+                                "reports"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Financial Summary",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/statistics/financial?startDate=2024-01-01&endDate=2024-01-31",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "statistics",
+                                "financial"
+                            ],
+                            "query": [
+                                {
+                                    "key": "startDate",
+                                    "value": "2024-01-01"
+                                },
+                                {
+                                    "key": "endDate",
+                                    "value": "2024-01-31"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Performance Metrics",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/statistics/performance",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "statistics",
+                                "performance"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Export Data",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"dataType\": \"students\",\n    \"format\": \"csv\",\n    \"includeHeaders\": true,\n    \"startDate\": \"2024-01-01\",\n    \"endDate\": \"2024-01-31\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/statistics/export",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "statistics",
+                                "export"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

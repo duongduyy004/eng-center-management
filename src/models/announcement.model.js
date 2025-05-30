@@ -17,7 +17,7 @@ const announcementSchema = new mongoose.Schema({
     },
     displayType: {
         type: String,
-        enum: ['popup', 'slider', 'banner', 'notification'],
+        enum: ['popup', 'banner', 'notification'],
         default: 'banner'
     },
     targetAudience: {
@@ -33,20 +33,9 @@ const announcementSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    endDate: Date,
-    priority: {
-        type: Number,
-        default: 0,
-        min: 0,
-        max: 10
-    },
     imageUrl: String,
     relatedClassId: { type: mongoose.Types.ObjectId, ref: 'Class' }, // Nếu quảng cáo về lớp học
     createdBy: { type: mongoose.Types.ObjectId, ref: 'User', required: true },
-    viewCount: {
-        type: Number,
-        default: 0
-    }
 },
     {
         timestamps: true,

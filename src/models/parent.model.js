@@ -12,9 +12,7 @@ const parentSchema = new mongoose.Schema({
         type: String,
         enum: ['father', 'mother', 'guardian', 'other'],
         required: true
-    },
-    occupation: String,
-    workAddress: String
+    }
 },
     {
         timestamps: true,

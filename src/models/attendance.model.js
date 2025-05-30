@@ -17,7 +17,7 @@ const attendanceSchema = new mongoose.Schema({
             studentId: { type: mongoose.Types.ObjectId, ref: 'Student', required: true },
             status: {
                 type: String,
-                enum: ['present', 'absent', 'late', 'excused'],
+                enum: ['present', 'absent', 'late'],
                 required: true
             },
             note: String,
@@ -27,8 +27,6 @@ const attendanceSchema = new mongoose.Schema({
             }
         }
     ],
-    topic: String, // Chủ đề bài học
-    notes: String, // Ghi chú của giáo viên
     isCompleted: {
         type: Boolean,
         default: false

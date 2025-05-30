@@ -4,7 +4,7 @@ const { toJSON, paginate, softDelete } = require('./plugins');
 
 const studentSchema = new mongoose.Schema({
     userId: { type: mongoose.Types.ObjectId, ref: 'User', required: true },
-    parentIds: { type: mongoose.Schema.Types.ObjectId, ref: 'Parent' },
+    parentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Parent' },
     classes: [{
         classId: { type: mongoose.Schema.Types.ObjectId, ref: 'Class' },
         discountPercent: {
@@ -19,15 +19,10 @@ const studentSchema = new mongoose.Schema({
         },
         status: {
             type: String,
-            enum: ['active', 'inactive', 'completed'],
+            enum: ['active', 'completed'],
             default: 'active'
         }
-    }],
-    emergencyContact: {
-        name: String,
-        phone: String,
-        relationship: String
-    }
+    }]
 },
     {
         timestamps: true,

@@ -9,7 +9,6 @@ const teacherSchema = new mongoose.Schema({
         required: true
     },
     qualifications: [String], // Bằng cấp, chứng chỉ
-    experience: String, // Kinh nghiệm
     specialization: [String], // Chuyên môn (tiếng Anh giao tiếp, IELTS, etc.)
     description: String,
     isActive: {

@@ -43,6 +43,11 @@ const userSchema = mongoose.Schema(
     dayOfBirth: Date,
     phone: String,
     address: String,
+    gender: {
+      type: String,
+      enum: ['male', 'female'],
+      required: true
+    },
     isEmailVerified: {
       type: Boolean,
       default: false,

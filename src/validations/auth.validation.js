@@ -6,12 +6,10 @@ const register = {
     email: Joi.string().required().email(),
     password: Joi.string().required().custom(password),
     name: Joi.string().required(),
-    role: Joi.string(),
-    parent: Joi.object().keys({
-      parent_email: Joi.string().required().email(),
-      parent_password: Joi.string().required().custom(password),
-      parent_name: Joi.string().required()
-    })
+    role: Joi.string().required(),
+    gender: Joi.string(),
+    phone: Joi.string(),
+    dayOfBirth: Joi.date()
   }),
 };
 

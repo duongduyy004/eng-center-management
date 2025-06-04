@@ -7,8 +7,8 @@ const queryClasses = async (filter, options) => {
     return aClass;
 }
 
-const getClassByNameAndYear = async (name, year) => {
-    const aClass = await Class.findOne({ name, year })
+const isClassExist = async (grade, section, year) => {
+    const aClass = await Class.findOne({ grade, section, year })
     return aClass
 }
 
@@ -26,7 +26,7 @@ const getClassById = async (classId) => {
  * @returns {Promise<Class>}
  */
 const createClass = async (classBody) => {
-    if (classBody && !getClassByNameAndYear(classBody?.name, classBody?.year)) {
+    if (classBody && isClassExist(classBody?.grade, classBody?.section, classBody?.year)) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Class already exsit')
     }
     return await Class.create(classBody)

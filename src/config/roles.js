@@ -1,9 +1,17 @@
 const allRoles = {
   user: [],
   student: [],
-  admin: ['getUsers', 'manageUsers', 'getClasses', 'manageClasses', 'getStudents', 'manageStudents'],
-  teacher: [],
-  parent: []
+  admin: [
+    'getUsers', 'manageUsers',
+    'getClasses', 'manageClasses',
+    'getStudents', 'manageStudents',
+    'getPayments', 'managePayments'
+  ],
+  teacher: [
+    'getClasses', 'getStudents',
+    'getPayments', 'managePayments'
+  ],
+  parent: ['getPayments']
 };
 
 const roles = Object.keys(allRoles);

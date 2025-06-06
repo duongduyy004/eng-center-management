@@ -32,18 +32,12 @@ const paymentSchema = new mongoose.Schema({
         min: 0,
         max: 100
     },
-    totalAmount: {
-        type: Number,
-        required: true
-    },
+    totalAmount: Number,
     discountAmount: {
         type: Number,
         default: 0
     },
-    finalAmount: {
-        type: Number,
-        required: true
-    },
+    finalAmount: Number,
     paidAmount: {
         type: Number,
         default: 0
@@ -76,8 +70,9 @@ const paymentSchema = new mongoose.Schema({
     }
 )
 
-// Pre-save middleware to calculate amounts
+// Enhanced pre-save middleware with better logging
 paymentSchema.pre('save', function (next) {
+    // Calculate amounts
     this.totalAmount = this.totalLessons * this.feePerLesson;
     this.discountAmount = (this.totalAmount * this.discountPercent) / 100;
     this.finalAmount = this.totalAmount - this.discountAmount;
@@ -90,6 +85,25 @@ paymentSchema.pre('save', function (next) {
         this.status = 'partial';
     } else {
         this.status = 'paid';
+    }
+
+    console.log('Calculated values:', {
+        totalAmount: this.totalAmount,
+        discountAmount: this.discountAmount,
+        finalAmount: this.finalAmount,
+        remainingAmount: this.remainingAmount,
+        status: this.status
+    });
+
+    next();
+});
+
+// Add pre-update middleware for findOneAndUpdate operations
+paymentSchema.pre(['findOneAndUpdate', 'updateOne'], function (next) {
+    const update = this.getUpdate();
+    // If any calculation-relevant fields are being updated
+    if (update.totalLessons || update.feePerLesson || update.discountPercent || update.paidAmount) {
+        console.log('Fields affecting calculations are being updated');
     }
 
     next();

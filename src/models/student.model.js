@@ -6,6 +6,7 @@ const studentSchema = new mongoose.Schema({
     userId: { type: mongoose.Types.ObjectId, ref: 'User', required: true },
     parentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Parent' },
     classes: [{
+        _id: false,
         classId: { type: mongoose.Schema.Types.ObjectId, ref: 'Class' },
         discountPercent: {
             type: Number,

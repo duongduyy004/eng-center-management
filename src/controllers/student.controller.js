@@ -7,7 +7,8 @@ const { getStudentById } = require("../services/student.service");
 const createStudent = catchAsync(async (req, res) => {
     const result = await studentService.createStudent(req.body)
     res.status(httpStatus.CREATED).json({
-        message: 'Create student successfully'
+        message: 'Create student successfully',
+        data: result
     })
 })
 

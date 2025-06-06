@@ -14,6 +14,10 @@ const ApiError = require("../utils/ApiError");
 const createStudent = async (studentBody) => {
     const { userData, studentData } = studentBody
     //create user for student
+    if (studentData.classes && !studentData.classes.classId) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Please pick a class')
+    }
+
     const user = await userService.createUser(userData)
 
     return await Student.create({ ...studentData, userId: user.id })
@@ -29,8 +33,25 @@ const getStudentById = async (studentId, populate) => {
     if (!student) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Student not found')
     }
-    return student
+    return transformStudentData(student)
 }
+
+/**
+ * Transform student data to remove _id from classes array
+ * @param {Object} student - Student document
+ * @returns {Object} - Transformed student data
+ */
+const transformStudentData = (student) => {
+    if (!student) return student;
+
+    const studentObj = student.toObject ? student.toObject() : student;
+
+    if (studentObj.classes && Array.isArray(studentObj.classes)) {
+        studentObj.classes = studentObj.classes.map(({ _id, ...classData }) => classData);
+    }
+
+    return studentObj;
+};
 
 /**
  * @param {import("mongoose").ObjectId} studentId 

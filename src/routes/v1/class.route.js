@@ -14,7 +14,7 @@ router.route('/:classId')
   .patch(auth('manageClasses'), classController.updateClass)
 
 // Enroll student to class
-router.post('/:classId/enroll',
+router.patch('/:classId/enroll',
   auth('manageClasses'),
   classController.enrollStudentToClass
 );

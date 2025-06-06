@@ -26,7 +26,7 @@ const getClassById = async (classId) => {
  * @returns {Promise<Class>}
  */
 const createClass = async (classBody) => {
-    if (classBody && isClassExist(classBody?.grade, classBody?.section, classBody?.year)) {
+    if (classBody && isClassExist(classBody?.grade, classBody?.section, classBody?.year) === null) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Class already exsit')
     }
     return await Class.create(classBody)
@@ -38,12 +38,7 @@ const updateClass = async (classId, classUpdate) => {
     if (!aClass) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Class not found')
     }
-    if (type === 'ADD-STUDENT') {
-        aClass = { ...aClass, studentId: classUpdate.data }
-    }
-    if (type === 'UPDATE-CLASS') {
-        Object.assign(aClass, classUpdate)
-    }
+    Object.assign(aClass, classUpdate)
     await aClass.save()
     return aClass
 }
@@ -51,11 +46,10 @@ const updateClass = async (classId, classUpdate) => {
 /**
  * Enroll student to a class
  * @param {ObjectId} classId
- * @param {ObjectId} studentId
- * @param {Object} enrollmentData
+ * @param {ObjectId} studentData
  * @returns {Promise<Object>}
  */
-const enrollStudentToClass = async (classId, studentId, enrollmentData = {}) => {
+const enrollStudentToClass = async (classId, studentData) => {
 
     // Check if class exists and is active
     const classInfo = await getClassById(classId);
@@ -73,14 +67,18 @@ const enrollStudentToClass = async (classId, studentId, enrollmentData = {}) => 
     }
 
     // Check if student exists
-    const student = await Student.findById(studentId);
+    const student = await Student.findById(studentData.studentId);
     if (!student) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Student not found');
     }
 
     // Check if student is already enrolled in this class
     const existingEnrollment = student.classes.find(
-        c => c.classId.toString() === classId.toString() && c.status === 'active'
+        c => {
+            if (c.classId) {
+                return c.classId.toString() === classId.toString() && c.status === 'active'
+            }
+        }
     );
     if (existingEnrollment) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Student is already enrolled in this class');
@@ -89,13 +87,13 @@ const enrollStudentToClass = async (classId, studentId, enrollmentData = {}) => 
     // Add student to class
     const enrollmentInfo = {
         classId: classId,
-        discountPercent: enrollmentData.discountPercent || 0,
+        discountPercent: studentData.discountPercent || 0,
         enrollmentDate: new Date(),
         status: 'active'
     };
 
     await Student.findByIdAndUpdate(
-        studentId,
+        studentData.studentId,
         { $push: { classes: enrollmentInfo } },
         { new: true }
     );
@@ -107,13 +105,13 @@ const enrollStudentToClass = async (classId, studentId, enrollmentData = {}) => 
     );
 
     // Create initial payment record for current month
-    const { paymentService } = require('./');
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
 
     try {
+        const paymentService = require('./payment.service');
         await paymentService.createPayment({
-            studentId: studentId,
+            studentId: studentData.studentId,
             classId: classId,
             month: currentMonth,
             year: currentYear,
@@ -127,7 +125,7 @@ const enrollStudentToClass = async (classId, studentId, enrollmentData = {}) => 
     }
 
     // Return updated student info
-    const updatedStudent = await Student.findById(studentId)
+    const updatedStudent = await Student.findById(studentData.studentId)
         .populate('userId', 'name email phone')
         .populate('classes.classId', 'name grade section year');
 

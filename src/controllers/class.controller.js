@@ -1,4 +1,4 @@
-const { Class } = require("../models");
+const { Class, Student } = require("../models");
 const catchAsync = require("../utils/catchAsync");
 const { classService } = require('../services')
 const httpStatus = require('http-status');
@@ -34,18 +34,10 @@ const updateClass = catchAsync(async (req, res) => {
  * Enroll student to class
  */
 const enrollStudentToClass = catchAsync(async (req, res) => {
-    const studentList = req.body
+    const studentData = req.body
     const classId = req.params.classId;
-    const result = []
 
-    studentList.map(item => {
-        result.push(async () => {
-            await classService.enrollStudentToClass(classId, item.studentId, {
-                discountPercent: item.discountPercent,
-                reason: item.reason
-            });
-        })
-    })
+    const result = await classService.enrollStudentToClass(classId, studentData)
 
     res.status(httpStatus.CREATED).send({
         message: 'Student enrolled successfully',

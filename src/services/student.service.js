@@ -18,7 +18,7 @@ const createStudent = async (studentBody) => {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Please pick a class')
     }
 
-    const user = await userService.createUser(userData)
+    const user = await userService.createUser({ ...userData, role: 'student' })
 
     return await Student.create({ ...studentData, userId: user.id })
 }
@@ -60,20 +60,28 @@ const transformStudentData = (student) => {
  * @param {Object} [updateBody.studentData]
  */
 const updateStudentById = async (studentId, updateBody) => {
+    const { userData, studentData } = updateBody
     const student = await getStudentById(studentId)
-    await userService.updateUserById(student.userId, updateBody.userData)
-    Object.assign(student, updateBody.studentData)
-    if (updateBody.studentData.classId) {
-        const newClass = await classService.getClassById(updateBody.studentData.classId)
-        newClass.studentIds.push(student.id)
+    if (userData) {
+        await userService.updateUserById(student.userId, updateBody.userData)
     }
-    await student.save()
+
+    if (studentData) {
+        Object.assign(student, updateBody.studentData)
+        if (updateBody.studentData.classId) {
+            const newClass = await classService.getClassById(updateBody.studentData.classId)
+            newClass.studentIds.push(student.id)
+        }
+        await student.save()
+    }
+
     return student
 }
 
 const deleteStudentById = async (studentId) => {
     const student = await getStudentById(studentId);
-    await student.remove();
+    await userService.deleteUserById(student.userId)
+    await student.delete();
     return student;
 };
 

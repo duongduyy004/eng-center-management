@@ -7,11 +7,6 @@ const parentSchema = new mongoose.Schema({
     canSeeTeacherInfo: {
         type: Boolean,
         default: true
-    },
-    relationship: {
-        type: String,
-        enum: ['father', 'mother', 'guardian', 'other'],
-        required: true
     }
 },
     {

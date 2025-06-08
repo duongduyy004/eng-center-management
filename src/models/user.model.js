@@ -70,7 +70,7 @@ userSchema.plugin(softDelete, { overrideMethods: true })
  * @returns {Promise<boolean>}
  */
 userSchema.statics.isEmailTaken = async function (email, excludeUserId) {
-  const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
+  const user = await this.findOneWithDeleted({ email, _id: { $ne: excludeUserId } });
   return !!user;
 };
 

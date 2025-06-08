@@ -1,21 +1,15 @@
 const httpStatus = require('http-status');
 const { Parent, Student, User, Attendance, Payment } = require("../models");
 const ApiError = require('../utils/ApiError');
+const { userService } = require('.');
 
 const createParent = async (userData, parentData) => {
-    // Support both new structured format and legacy format
-    if (parentData) {
-        // New structured format with separate userData and parentData
-        const user = await User.create({ ...userData, role: 'parent' });
-        const parent = await Parent.create({
-            ...parentData,
-            userId: user.id
-        });
-        return parent;
-    } else {
-        // Legacy format - userData contains all data
-        return await Parent.create(userData);
-    }
+    const user = await userService.createUser({ ...userData, role: 'parent' });
+    const parent = await Parent.create({
+        ...parentData,
+        userId: user.id
+    });
+    return parent;
 }
 
 const queryParents = async (filter, options) => {
@@ -24,25 +18,37 @@ const queryParents = async (filter, options) => {
 };
 
 const getParentById = async (id) => {
-    return Parent.findById(id).populate('userId').populate('children');
-};
-
-const updateParentById = async (parentId, updateBody) => {
-    const parent = await getParentById(parentId);
+    const parent = Parent.findById(id).populate('userId').populate('studentIds');
     if (!parent) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Parent not found');
     }
-    Object.assign(parent, updateBody);
+    return parent;
+};
+
+/**
+ * 
+ * @param {ObjectId} parentId 
+ * @param {Object} updateBody 
+ * @param {Object} [updateBody.userData]
+ * @param {Object} [updateBody.parentData]
+ * @returns 
+ */
+const updateParentById = async (parentId, updateBody) => {
+    const { userData, parentData } = updateBody;
+    const parent = await getParentById(parentId);
+    const user = await userService.createUser({ ...userData, role: 'parent' })
+    if (!parent) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Parent not found');
+    }
+    Object.assign(parent, { ...parentData, userId: user.id });
     await parent.save();
     return parent;
 };
 
 const deleteParentById = async (parentId) => {
     const parent = await getParentById(parentId);
-    if (!parent) {
-        throw new ApiError(httpStatus.NOT_FOUND, 'Parent not found');
-    }
-    await parent.remove();
+    await userService.deleteUserById(parent.userId)
+    await parent.delete();
     return parent;
 };
 

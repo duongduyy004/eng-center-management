@@ -5,7 +5,9 @@ const allRoles = {
     'getUsers', 'manageUsers',
     'getClasses', 'manageClasses',
     'getStudents', 'manageStudents',
-    'getPayments', 'managePayments'
+    'getPayments', 'managePayments',
+    'getTeachers', 'manageTeachers',
+    'getParents', 'manageParents'
   ],
   teacher: [
     'getClasses', 'getStudents',

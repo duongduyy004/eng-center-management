@@ -23,13 +23,13 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
 
 const getUserId = async (params) => {
   if (params.studentId) {
-    return (await Student.findById(params.studentId)).userId
+    return (await Student.findById(params.studentId))?.userId
   }
   else if (params.teacherId) {
-    return (await Teacher.findById(params.teacherId)).userId
+    return (await Teacher.findById(params.teacherId))?.userId
   }
   else if (params.parentId) {
-    return (await Parent.findById(params.parentId)).userId
+    return (await Parent.findById(params.parentId))?.userId
   }
 }
 

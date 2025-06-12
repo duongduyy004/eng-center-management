@@ -120,5 +120,5 @@ module.exports = {
     enrollStudentToClass,
     removeStudentFromClass,
     transferStudent,
-    getClassEnrollmentHistory
+    getClassEnrollmentHistory,
 }

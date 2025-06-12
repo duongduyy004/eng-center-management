@@ -7,10 +7,6 @@ const attendanceSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
-    lessonNumber: {
-        type: Number,
-        required: true
-    },
     teacherId: { type: mongoose.Types.ObjectId, ref: 'Teacher', required: true },
     students: [
         {
@@ -18,7 +14,8 @@ const attendanceSchema = new mongoose.Schema({
             status: {
                 type: String,
                 enum: ['present', 'absent', 'late'],
-                required: true
+                required: true,
+                default: 'absent'
             },
             note: String,
             checkedAt: {

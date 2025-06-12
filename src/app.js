@@ -13,6 +13,7 @@ const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes/v1');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
+const { serveUploads } = require('./middlewares/static');
 
 const app = express();
 
@@ -40,6 +41,9 @@ app.use(compression());
 // enable cors
 app.use(cors());
 app.options('*', cors());
+
+// Serve static files (avatars)
+app.use('/uploads', serveUploads);
 
 // jwt authentication
 app.use(passport.initialize());

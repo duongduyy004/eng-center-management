@@ -37,15 +37,10 @@ const deleteTeacher = catchAsync(async (req, res) => {
     res.status(httpStatus.NO_CONTENT).send();
 });
 
-const assignTeacherToClass = catchAsync(async (req, res) => {
-    await teacherService.assignTeacherToClass()
-})
-
 module.exports = {
     createTeacher,
     getTeachers,
     getTeacher,
     updateTeacher,
-    deleteTeacher,
-    assignTeacherToClass
+    deleteTeacher
 };

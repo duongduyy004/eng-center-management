@@ -48,6 +48,7 @@ const userSchema = mongoose.Schema(
       enum: ['male', 'female'],
       required: true
     },
+    avatar: String,
     isEmailVerified: {
       type: Boolean,
       default: false,
@@ -61,7 +62,7 @@ const userSchema = mongoose.Schema(
 // add plugin that converts mongoose to json
 userSchema.plugin(toJSON);
 userSchema.plugin(paginate);
-userSchema.plugin(softDelete, { overrideMethods: true })
+userSchema.plugin(softDelete, { indexFields: ['deletedAt'], overrideMethods: true })
 
 /**
  * Check if email is taken

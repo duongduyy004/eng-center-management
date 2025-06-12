@@ -59,35 +59,10 @@ const deleteTeacherById = async (teacherId) => {
     return teacher;
 }
 
-const assignTeacherToClass = async (teacherId, classId, reAssign) => {
-    const teacher = await getTeacherById(teacherId);
-    const aClass = await classService.getClassById(classId)
-    if (!teacher) {
-        throw new ApiError(httpStatus.NOT_FOUND, 'Teacher not found');
-    }
-
-    if (aClass.teacherId && !reAssign) {
-        throw new ApiError(httpStatus.BAD_REQUEST, 'Class already assigned by another teacher')
-    }
-
-    if (teacher.classes) {
-        teacher.classes.map(item => {
-            if (item.toString() === classId.toString()) throw new ApiError(httpStatus.BAD_REQUEST, 'Class already is assigned to this teacher')
-        })
-    }
-    aClass.teacherId = teacherId
-    teacher.classes.push(classId)
-    await teacher.save();
-    await aClass.save();
-
-    return teacher;
-}
-
 module.exports = {
     createTeacher,
     queryTeachers,
     getTeacherById,
     updateTeacherById,
-    deleteTeacherById,
-    assignTeacherToClass
+    deleteTeacherById
 }

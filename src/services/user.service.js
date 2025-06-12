@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const { User } = require('../models');
 const ApiError = require('../utils/ApiError');
+const { deleteAvatar } = require('../middlewares/upload');
 
 /**
  * Create a user
@@ -47,6 +48,49 @@ const getUserByEmail = async (email) => {
 };
 
 /**
+ * Update user avatar
+ * @param {ObjectId} userId
+ * @param {string} avatarPath
+ * @returns {Promise<User>}
+ */
+const updateUserAvatar = async (userId, avatarPath) => {
+  const user = await getUserById(userId);
+
+  // Delete old avatar if exists
+  if (user?.avatar) {
+    await deleteAvatar(user.avatar);
+  }
+
+  // Update user with new avatar
+  Object.assign(user, { avatar: avatarPath });
+  await user.save();
+
+  return user;
+};
+
+/**
+ * Delete user avatar
+ * @param {ObjectId} userId
+ * @returns {Promise<User>}
+ */
+const deleteUserAvatar = async (userId) => {
+  const user = await getUserById(userId);
+
+  if (!user.avatar) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User does not have an avatar');
+  }
+
+  // Delete avatar file
+  await deleteAvatar(user.avatar);
+
+  // Remove avatar from user
+  user.avatar = undefined;
+  await user.save();
+
+  return user;
+};
+
+/**
  * Update user by id
  * @param {ObjectId} userId
  * @param {Object} updateBody
@@ -63,6 +107,13 @@ const updateUserById = async (userId, updateBody) => {
   if (updateBody.email) {
     updateBody = { ...updateBody, isEmailVerified: false }
   }
+
+  // Handle avatar deletion if needed
+  if (updateBody.avatar === null && user.avatar) {
+    await deleteAvatar(user.avatar);
+    updateBody.avatar = undefined;
+  }
+
   Object.assign(user, updateBody);
   await user.save();
   return user;
@@ -89,4 +140,6 @@ module.exports = {
   getUserByEmail,
   updateUserById,
   deleteUserById,
+  updateUserAvatar,
+  deleteUserAvatar,
 };

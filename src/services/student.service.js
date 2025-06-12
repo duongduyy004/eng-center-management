@@ -10,7 +10,6 @@ const ApiError = require("../utils/ApiError");
  * @param {Object} studentBody.studentData
  * @returns 
  */
-
 const createStudent = async (studentBody) => {
     const { userData, studentData } = studentBody
     //create user for student
@@ -59,19 +58,23 @@ const transformStudentData = (student) => {
  * @param {Object} [updateBody.userData]
  * @param {Object} [updateBody.studentData]
  */
-const updateStudentById = async (studentId, updateBody) => {
+const updateStudentById = async (studentId, updateBody, user) => {
     const { userData, studentData } = updateBody
     const student = await getStudentById(studentId)
+    if (user.role !== 'admin') {
+        delete userData.name;
+        delete studentData;
+    }
     if (userData) {
         await userService.updateUserById(student.userId, updateBody.userData)
     }
 
     if (studentData) {
-        Object.assign(student, updateBody.studentData)
-        if (updateBody.studentData.classId) {
-            const newClass = await classService.getClassById(updateBody.studentData.classId)
-            newClass.studentIds.push(student.id)
-        }
+        student.classes.map(item => {
+            if (item.classId == studentData.classId) {
+                Object.assign(student, studentData)
+            }
+        })
         await student.save()
     }
 

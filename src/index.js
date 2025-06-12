@@ -2,10 +2,16 @@ const mongoose = require('mongoose');
 const app = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
+const createDefaultAdmin = require('./utils/createDefaultAdmin');
 
 let server;
 mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
   logger.info('Connected to MongoDB');
+
+  createDefaultAdmin().catch((error) => {
+    logger.error('Failed to create default admin:', error);
+  });
+
   server = app.listen(config.port, () => {
     logger.info(`Listening to port ${config.port}`);
   });

@@ -26,7 +26,7 @@ const getClassById = async (classId) => {
  * @returns {Promise<Class>}
  */
 const createClass = async (classBody) => {
-    if (classBody && isClassExist(classBody?.grade, classBody?.section, classBody?.year) === null) {
+    if (classBody && await isClassExist(classBody?.grade, classBody?.section, classBody?.year) !== null) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Class already exsit')
     }
     return await Class.create(classBody)

@@ -26,6 +26,9 @@ const envVarsSchema = Joi.object()
     SMTP_USERNAME: Joi.string().description('username for email server'),
     SMTP_PASSWORD: Joi.string().description('password for email server'),
     EMAIL_FROM: Joi.string().description('the from field in the emails sent by the app'),
+    DEFAULT_ADMIN_EMAIL: Joi.string().email().default('admin@gmail.com'),
+    DEFAULT_ADMIN_PASSWORD: Joi.string().min(6).default('admin123'),
+    DEFAULT_ADMIN_NAME: Joi.string().default('Bố'),
   })
   .unknown();
 
@@ -64,4 +67,10 @@ module.exports = {
     },
     from: envVars.EMAIL_FROM,
   },
+  // Default admin configuration
+  defaultAdmin: {
+    email: envVars.DEFAULT_ADMIN_EMAIL,
+    password: envVars.DEFAULT_ADMIN_PASSWORD,
+    name: envVars.DEFAULT_ADMIN_NAME,
+  }
 };

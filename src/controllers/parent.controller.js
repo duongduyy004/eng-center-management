@@ -25,7 +25,7 @@ const getParent = catchAsync(async (req, res) => {
 });
 
 const updateParent = catchAsync(async (req, res) => {
-    const parent = await parentService.updateParentById(req.params.parentId, req.body);
+    const parent = await parentService.updateParentById(req.params.parentId, req.body, req.user);
     res.send(parent);
 });
 
@@ -34,10 +34,24 @@ const deleteParent = catchAsync(async (req, res) => {
     res.status(httpStatus.NO_CONTENT).send();
 });
 
+const addChild = catchAsync(async (req, res) => {
+    const { studentId, parentId } = req.body;
+    const child = await parentService.addChild(parentId, studentId)
+    res.send(child)
+})
+
+const deleteChild = catchAsync(async (req, res) => {
+    const { studentId, parentId } = req.body
+    const child = await parentService.deleteChild(parentId, studentId)
+    res.send(child)
+})
+
 module.exports = {
     createParent,
     getParents,
     getParent,
     updateParent,
     deleteParent,
+    addChild,
+    deleteChild
 };

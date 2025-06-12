@@ -28,8 +28,8 @@ const classSchema = new mongoose.Schema({
         endDate: Date,
         dayOfWeeks: [Number], // 0-6 (Sunday-Saturday)
         timeSlots: {
-            startTime: String, // "08:00"
-            endTime: String    // "10:00"
+            startTime: String,
+            endTime: String
         }
     },
     feePerLesson: {

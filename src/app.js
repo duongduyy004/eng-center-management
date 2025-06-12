@@ -14,6 +14,8 @@ const routes = require('./routes/v1');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 const { serveUploads } = require('./middlewares/static');
+const createDefaultAdmin = require('./utils/createDefaultAdmin');
+const logger = require('./config/logger');
 
 const app = express();
 
@@ -67,5 +69,15 @@ app.use(errorConverter);
 
 // handle error
 app.use(errorHandler);
+
+const initializeAdmin = async () => {
+  try {
+    await createDefaultAdmin();
+  } catch (error) {
+    logger.error('Failed to initialize admin account:', error);
+  }
+};
+
+app.on('ready', initializeAdmin);
 
 module.exports = app;

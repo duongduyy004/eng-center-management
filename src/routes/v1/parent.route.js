@@ -8,7 +8,9 @@ const router = express.Router();
 router
     .route('/')
     .post(auth('manageParents'), parentController.createParent)
-    .get(auth('getParents'), parentController.getParents);
+    .get(auth('getParents'), parentController.getParents)
+    .patch(auth('manageParents'), parentController.addChild)
+    .delete(auth('manageParents'), parentController.deleteChild)
 
 router
     .route('/:parentId')

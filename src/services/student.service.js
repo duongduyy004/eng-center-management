@@ -1,6 +1,6 @@
 const httpStatus = require("http-status");
 const { userService, classService } = require(".");
-const { Student } = require("../models");
+const { Student, User } = require("../models");
 const ApiError = require("../utils/ApiError");
 
 /**
@@ -23,34 +23,25 @@ const createStudent = async (studentBody) => {
 }
 
 const queryStudents = async (filter, options) => {
-    const users = await Student.paginate(filter, options);
+    if (filter.name) {
+        const users = await User.find({
+            name: { $regex: filter.name, $options: 'i' }
+        }).select('_id');
+        const userIds = users.map(user => user._id);
+        filter.userId = { $in: userIds };
+        delete filter.name;
+    }
+    const users = await Student.paginate(filter, { ...options, populate: 'userId' })
     return users;
 };
 
 const getStudentById = async (studentId, populate) => {
-    const student = await Student.findById(studentId).populate(populate)
+    const student = await Student.findById(studentId).populate('userId')
     if (!student) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Student not found')
     }
-    return transformStudentData(student)
+    return student
 }
-
-/**
- * Transform student data to remove _id from classes array
- * @param {Object} student - Student document
- * @returns {Object} - Transformed student data
- */
-const transformStudentData = (student) => {
-    if (!student) return student;
-
-    const studentObj = student.toObject ? student.toObject() : student;
-
-    if (studentObj.classes && Array.isArray(studentObj.classes)) {
-        studentObj.classes = studentObj.classes.map(({ _id, ...classData }) => classData);
-    }
-
-    return studentObj;
-};
 
 /**
  * @param {import("mongoose").ObjectId} studentId 
@@ -65,18 +56,12 @@ const updateStudentById = async (studentId, updateBody, user) => {
         delete userData.name;
         delete studentData;
     }
-    if (userData) {
-        await userService.updateUserById(student.userId, updateBody.userData)
-    }
+    await userService.updateUserById(student.userId, { ...userData, role: 'student' })
 
-    if (studentData) {
-        student.classes.map(item => {
-            if (item.classId == studentData.classId) {
-                Object.assign(student, studentData)
-            }
-        })
-        await student.save()
+    if (studentData.length > 0) {
+        student.classes = studentData;
     }
+    await student.save()
 
     return student
 }
@@ -219,26 +204,6 @@ const getStudentAnnouncements = async (studentId) => {
     return announcements;
 };
 
-const enrollStudent = async (studentId, enrollmentData) => {
-    const { Enrollment } = require('../models');
-    const student = await getStudentById(studentId);
-
-    const enrollment = await Enrollment.create({
-        studentId,
-        classId: enrollmentData.classId,
-        enrollmentDate: enrollmentData.enrollmentDate || new Date(),
-        status: enrollmentData.status || 'active'
-    });
-
-    // Update student's classId if enrollment is active
-    if (enrollment.status === 'active') {
-        student.classId = enrollmentData.classId;
-        await student.save();
-    }
-
-    return enrollment;
-};
-
 module.exports = {
     createStudent,
     queryStudents,
@@ -251,6 +216,5 @@ module.exports = {
     getStudentSchedule,
     getStudentProgress,
     getStudentStatistics,
-    getStudentAnnouncements,
-    enrollStudent
+    getStudentAnnouncements
 }

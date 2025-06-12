@@ -1,6 +1,6 @@
 const httpStatus = require("http-status")
 const { userService, classService } = require(".")
-const { Teacher, Class } = require("../models")
+const { Teacher, Class, User } = require("../models")
 const ApiError = require("../utils/ApiError")
 
 /**
@@ -12,17 +12,28 @@ const ApiError = require("../utils/ApiError")
  */
 const createTeacher = async (teacherBody) => {
     const { userData, teacherData } = teacherBody
-
     const user = await userService.createUser({ ...userData, role: 'teacher' })
     return await Teacher.create({ ...teacherData, userId: user.id })
 }
 
 const queryTeachers = async (filter, options) => {
-    return await Teacher.paginate(filter, options)
+    if (filter.name) {
+        const users = await User.find({
+            name: { $regex: filter.name, $options: 'i' }
+        }).select('_id');
+        const userIds = users.map(user => user._id);
+        filter.userId = { $in: userIds };
+        delete filter.name;
+    }
+    return await Teacher.paginate(filter, { ...options, populate: 'userId' })
 }
 
 const getTeacherById = async (teacherId) => {
-    return await Teacher.findById(teacherId)
+    const teacher = await Teacher.findById(teacherId).populate('userId')
+    if (!teacher) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Teacher not found')
+    }
+    return teacher
 }
 
 /**
@@ -37,7 +48,7 @@ const updateTeacherById = async (teacherId, updateBody, role) => {
     const teacher = await getTeacherById(teacherId)
 
     if (userData) {
-        await userService.updateUserById(teacher.userId, userData)
+        await userService.updateUserById(teacher.userId, { ...userData, role: 'teacher' })
     }
 
     if (teacherData.salaryPerLesson && role !== 'admin') {

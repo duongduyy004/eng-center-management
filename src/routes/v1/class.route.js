@@ -1,40 +1,39 @@
 const express = require('express')
 const router = express.Router()
 const validate = require('../../middlewares/validate');
+const classValidation = require('../../validations/class.validation');
 const classController = require('../../controllers/class.controller');
 const auth = require('../../middlewares/auth');
 
 router
   .route('/')
-  .get(auth('getClasses'), classController.getClasses)
-  .post(auth('manageClasses'), classController.createClass)
+  .get(auth('getClasses'), validate(classValidation.getClasses), classController.getClasses)
+  .post(auth('manageClasses'), validate(classValidation.createClass), classController.createClass)
 
 router.route('/:classId')
-  .get(auth('getClasses'), classController.getClass)
-  .patch(auth('manageClasses'), classController.updateClass)
+  .get(auth('getClasses'), validate(classValidation.getClass), classController.getClass)
+  .patch(auth('manageClasses'), validate(classValidation.updateClass), classController.updateClass)
 
 // Enroll student to class
-router.patch('/:classId/enroll',
+router.patch('/:classId/students',
   auth('manageClasses'),
+  // validate(classValidation.enrollStudent),
   classController.enrollStudentToClass
 );
 
+// Get class students list
+router.get('/:classId/students',
+  auth('getClasses'),
+  validate(classValidation.getClassStudents),
+  classController.getClassStudents
+);
+
 // Remove student from class
-router.delete('/:classId/students/:studentId',
+router.delete('/:classId/students',
   auth('manageClasses'),
+  validate(classValidation.removeStudentFromClass),
   classController.removeStudentFromClass
 );
 
-// Transfer student between classes
-router.post('/transfer',
-  auth('manageClasses'),
-  classController.transferStudent
-);
-
-// Get class enrollment history
-router.get('/:classId/enrollment-history',
-  auth('getClasses'),
-  classController.getClassEnrollmentHistory
-);
 
 module.exports = router;

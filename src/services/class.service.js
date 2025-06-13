@@ -98,12 +98,6 @@ const enrollStudentToClass = async (classId, studentData) => {
         { new: true }
     );
 
-    // Update class current students count
-    await Class.findByIdAndUpdate(
-        classId,
-        { $inc: { currentStudents: 1 } }
-    );
-
     // Create initial payment record for current month
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
@@ -135,107 +129,132 @@ const enrollStudentToClass = async (classId, studentData) => {
         classInfo: {
             id: classInfo._id,
             name: classInfo.name,
-            currentStudents: classInfo.currentStudents + 1,
             maxStudents: classInfo.maxStudents
         }
     };
 };
 
 /**
- * Remove student from a class
+ * Get students list of a class
+ * @param {ObjectId} classId
+ * @param {Object} options - Query options (pagination, sorting)
+ * @returns {Promise<Object>}
+ */
+const getClassStudents = async (classId, options = {}) => {
+    // Verify class exists
+    const classInfo = await getClassById(classId);
+
+    // Build filter to find students enrolled in this class
+    const filter = {
+        'classes.classId': classId,
+        'classes.status': 'active'
+    };
+
+    // Default options for pagination
+    const queryOptions = {
+        limit: options.limit || 10,
+        page: options.page || 1,
+        sortBy: options.sortBy || 'createdAt:desc', // Use default sort, will sort by lastname manually
+        populate: 'userId,parentId'
+    };
+
+    // Get students using pagination
+    const studentsResult = await Student.paginate(filter, queryOptions);
+
+    // Transform student data to include class-specific info
+    const studentsWithClassInfo = studentsResult.results.map(student => {
+        const classEnrollment = student.classes.find(
+            c => c.classId.toString() === classId.toString() && c.status === 'active'
+        );
+
+        return {
+            id: student.id || student._id,
+            name: student.userId?.name || 'N/A',
+        };
+    });
+
+    // Sort students by lastname (case-insensitive)
+    studentsWithClassInfo.sort((a, b) => {
+        const lastNameA = a.name.split(' ').pop().toLowerCase();
+        const lastNameB = b.name.split(' ').pop().toLowerCase();
+        return lastNameA.localeCompare(lastNameB, 'vi');
+    });
+
+    return {
+        class: {
+            id: classInfo._id,
+            name: classInfo.name,
+            grade: classInfo.grade,
+            section: classInfo.section,
+            year: classInfo.year,
+            maxStudents: classInfo.maxStudents,
+            currentStudents: studentsWithClassInfo.length,
+            teacher: classInfo.teacherId
+        },
+        students: studentsWithClassInfo,
+        pagination: {
+            page: studentsResult.page,
+            limit: studentsResult.limit,
+            totalPages: studentsResult.totalPages,
+            totalResults: studentsResult.totalResults
+        }
+    };
+};
+
+/**
+ * Remove student from class
  * @param {ObjectId} classId
  * @param {ObjectId} studentId
  * @returns {Promise<Object>}
  */
 const removeStudentFromClass = async (classId, studentId) => {
-
-    // Check if class exists
+    // Verify class exists
     const classInfo = await getClassById(classId);
-    if (!classInfo) {
-        throw new ApiError(httpStatus.NOT_FOUND, 'Class not found');
-    }
 
-    // Check if student exists
-    const student = await Student.findById(studentId);
+    // Check if student exists and get student info
+    const student = await Student.findById(studentId).populate('userId', 'name email phone');
     if (!student) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Student not found');
     }
 
-    // Find the enrollment
-    const enrollmentIndex = student.classes.findIndex(
+    // Check if student is enrolled in this class
+    const classEnrollment = student.classes.find(
         c => c.classId.toString() === classId.toString() && c.status === 'active'
     );
 
-    if (enrollmentIndex === -1) {
-        throw new ApiError(httpStatus.NOT_FOUND, 'Student is not enrolled in this class');
+    if (!classEnrollment) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Student is not enrolled in this class');
     }
 
-    // Update enrollment status to inactive instead of removing
-    await Student.findOneAndUpdate(
-        { _id: studentId, 'classes.classId': classId },
+    // Remove the specific class enrollment completely from student's classes array
+    await Student.findByIdAndUpdate(
+        studentId,
         {
-            $set: {
-                'classes.$.status': 'inactive',
-                'classes.$.withdrawalDate': new Date()
+            $pull: {
+                classes: {
+                    classId: classId,
+                    status: 'active'
+                }
             }
         }
     );
 
-    // Update class current students count
-    await Class.findByIdAndUpdate(
-        classId,
-        { $inc: { currentStudents: -1 } }
-    );
-
-    // Update payment records - mark remaining payments as cancelled
-    const { Payment } = require('../models');
-    await Payment.updateMany(
-        {
-            studentId: studentId,
-            classId: classId,
-            status: { $in: ['pending', 'partial'] }
-        },
-        {
-            status: 'cancelled',
-            notes: 'Student withdrawn from class'
-        }
-    );
-
     return {
-        message: 'Student removed from class successfully',
-        classInfo: {
+        student: {
+            id: student._id,
+            name: student.userId?.name || 'N/A',
+            email: student.userId?.email || 'N/A',
+            phone: student.userId?.phone || 'N/A'
+        },
+        class: {
             id: classInfo._id,
             name: classInfo.name,
-            currentStudents: Math.max(0, classInfo.currentStudents - 1),
-            maxStudents: classInfo.maxStudents
-        }
-    };
-};
-
-/**
- * Transfer student to another class
- * @param {ObjectId} fromClassId
- * @param {ObjectId} toClassId
- * @param {ObjectId} studentId
- * @param {Object} transferData
- * @returns {Promise<Object>}
- */
-const transferStudent = async (fromClassId, toClassId, studentId, transferData = {}) => {
-    // Remove from old class
-    await removeStudentFromClass(fromClassId, studentId);
-
-    // Add to new class
-    const result = await enrollStudentToClass(toClassId, studentId, transferData);
-
-    return {
-        ...result,
-        message: 'Student transferred successfully',
-        transfer: {
-            from: fromClassId,
-            to: toClassId,
-            date: new Date(),
-            reason: transferData.reason || 'Transfer requested'
-        }
+            grade: classInfo.grade,
+            section: classInfo.section,
+            year: classInfo.year
+        },
+        removalDate: new Date(),
+        message: 'Student completely removed from class'
     };
 };
 
@@ -245,6 +264,6 @@ module.exports = {
     updateClass,
     getClassById,
     enrollStudentToClass,
-    removeStudentFromClass,
-    transferStudent
+    getClassStudents,
+    removeStudentFromClass
 }

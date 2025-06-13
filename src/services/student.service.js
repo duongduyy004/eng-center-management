@@ -35,7 +35,7 @@ const queryStudents = async (filter, options) => {
     return users;
 };
 
-const getStudentById = async (studentId, populate) => {
+const getStudentById = async (studentId) => {
     const student = await Student.findById(studentId).populate('userId')
     if (!student) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Student not found')
@@ -113,97 +113,6 @@ const getStudentSchedule = async (studentId) => {
     };
 };
 
-const getStudentProgress = async (studentId) => {
-    const { Attendance, Payment } = require('../models');
-    const student = await Student.findById(studentId).populate('classId userId');
-    if (!student) {
-        throw new ApiError(httpStatus.NOT_FOUND, 'Student not found');
-    }
-
-    // Get attendance data
-    const totalClasses = await Attendance.countDocuments({ studentId });
-    const presentClasses = await Attendance.countDocuments({ studentId, status: 'present' });
-
-    // Get payment data
-    const totalPayments = await Payment.countDocuments({ studentId });
-    const paidPayments = await Payment.countDocuments({ studentId, status: 'paid' });
-
-    return {
-        student: {
-            id: student._id,
-            name: student.userId?.name,
-            class: student.classId?.name
-        },
-        attendance: {
-            total: totalClasses,
-            present: presentClasses,
-            rate: totalClasses > 0 ? (presentClasses / totalClasses) * 100 : 0
-        },
-        payments: {
-            total: totalPayments,
-            paid: paidPayments,
-            rate: totalPayments > 0 ? (paidPayments / totalPayments) * 100 : 0
-        }
-    };
-};
-
-const getStudentStatistics = async (studentId) => {
-    const { Attendance, Payment, Enrollment } = require('../models');
-    const student = await Student.findById(studentId).populate('classId userId');
-    if (!student) {
-        throw new ApiError(httpStatus.NOT_FOUND, 'Student not found');
-    }
-
-    const currentMonth = new Date().getMonth() + 1;
-    const currentYear = new Date().getFullYear();
-
-    // Monthly attendance
-    const monthlyAttendance = await Attendance.countDocuments({
-        studentId,
-        date: {
-            $gte: new Date(currentYear, currentMonth - 1, 1),
-            $lt: new Date(currentYear, currentMonth, 1)
-        }
-    });
-
-    // Total enrollments
-    const totalEnrollments = await Enrollment.countDocuments({ studentId });
-
-    return {
-        student: {
-            id: student._id,
-            name: student.userId?.name,
-            class: student.classId?.name
-        },
-        statistics: {
-            monthlyAttendance,
-            totalEnrollments,
-            discountPercentage: student.discountPercentage || 0,
-            joinDate: student.createdAt
-        }
-    };
-};
-
-const getStudentAnnouncements = async (studentId) => {
-    const { Announcement } = require('../models');
-    const student = await Student.findById(studentId).populate('classId');
-    if (!student) {
-        throw new ApiError(httpStatus.NOT_FOUND, 'Student not found');
-    }
-
-    // Get announcements for student's class or general announcements
-    const announcements = await Announcement.find({
-        $or: [
-            { targetAudience: 'all' },
-            { targetAudience: 'students' },
-            { classId: student.classId?._id }
-        ],
-        isActive: true
-    }).sort({ createdAt: -1 });
-
-    return announcements;
-};
-
 module.exports = {
     createStudent,
     queryStudents,
@@ -213,8 +122,5 @@ module.exports = {
     getStudentClasses,
     getStudentAttendance,
     getStudentPayments,
-    getStudentSchedule,
-    getStudentProgress,
-    getStudentStatistics,
-    getStudentAnnouncements
+    getStudentSchedule
 }

@@ -103,7 +103,6 @@ paymentSchema.pre(['findOneAndUpdate', 'updateOne'], function (next) {
     const update = this.getUpdate();
     // If any calculation-relevant fields are being updated
     if (update.totalLessons || update.feePerLesson || update.discountPercent || update.paidAmount) {
-        console.log('Fields affecting calculations are being updated');
     }
 
     next();

@@ -40,10 +40,6 @@ const classSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    currentStudents: {
-        type: Number,
-        default: 0
-    },
     teacherId: { type: mongoose.Types.ObjectId, ref: 'Teacher' },
     description: String,
     totalLessons: Number, // Tổng số buổi học dự kiến

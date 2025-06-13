@@ -42,33 +42,6 @@ const enrollStudentToClass = catchAsync(async (req, res) => {
 });
 
 /**
- * Remove student from class
- */
-const removeStudentFromClass = catchAsync(async (req, res) => {
-    const { classId, studentId } = req.params;
-
-    const result = await classService.removeStudentFromClass(classId, studentId);
-    res.send(result);
-});
-
-/**
- * Transfer student between classes
- */
-const transferStudent = catchAsync(async (req, res) => {
-    const { fromClassId, toClassId, studentId, reason, discountPercent } = req.body;
-
-    const result = await classService.transferStudent(fromClassId, toClassId, studentId, {
-        reason,
-        discountPercent
-    });
-
-    res.send({
-        message: 'Student transferred successfully',
-        data: result
-    });
-});
-
-/**
  * Get class enrollment history
  */
 const getClassEnrollmentHistory = catchAsync(async (req, res) => {
@@ -108,13 +81,57 @@ const getClassEnrollmentHistory = catchAsync(async (req, res) => {
     });
 });
 
+/**
+ * Get students list of a class
+ */
+const getClassStudents = catchAsync(async (req, res) => {
+    const classId = req.params.classId;
+    const options = pick(req.query, ['sortBy', 'limit', 'page']);
+    const result = await classService.getClassStudents(classId, options);
+
+    res.send({
+        message: 'Class students retrieved successfully',
+        data: result
+    });
+});
+
+/**
+ * Get detailed students info of a class (with attendance & payment stats)
+ */
+const getClassStudentsDetailed = catchAsync(async (req, res) => {
+    const classId = req.params.classId;
+
+    const result = await classService.getClassStudentsDetailed(classId);
+
+    res.send({
+        message: 'Class students detailed info retrieved successfully',
+        data: result
+    });
+});
+
+/**
+ * Remove student from class
+ */
+const removeStudentFromClass = catchAsync(async (req, res) => {
+    const { classId } = req.params;
+    const { studentId } = req.body
+
+    const result = await classService.removeStudentFromClass(classId, studentId);
+
+    res.send({
+        message: 'Student removed from class successfully',
+        data: result
+    });
+});
+
 module.exports = {
     getClasses,
     createClass,
     updateClass,
     getClass,
     enrollStudentToClass,
-    removeStudentFromClass,
-    transferStudent,
     getClassEnrollmentHistory,
+    getClassStudents,
+    getClassStudentsDetailed,
+    removeStudentFromClass,
 }

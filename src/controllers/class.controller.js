@@ -2,7 +2,6 @@ const catchAsync = require("../utils/catchAsync");
 const { classService } = require('../services')
 const httpStatus = require('http-status');
 const pick = require('../utils/pick');
-const ApiError = require('../utils/ApiError');
 
 const getClasses = catchAsync(async (req, res) => {
     const filter = pick(req.query, ['year', 'grade']);
@@ -13,7 +12,10 @@ const getClasses = catchAsync(async (req, res) => {
 
 const getClass = catchAsync(async (req, res) => {
     const aClass = await classService.getClassById(req.params.classId);
-    res.send(aClass);
+    res.status(httpStatus.OK).json({
+        message: 'Get class successfully',
+        data: aClass
+    });
 })
 
 const createClass = catchAsync(async (req, res) => {
@@ -23,7 +25,10 @@ const createClass = catchAsync(async (req, res) => {
 
 const updateClass = catchAsync(async (req, res) => {
     const aClass = await classService.updateClass(req.params.classId, req.body)
-    res.send(aClass)
+    res.status(httpStatus.OK), json({
+        message: 'Update class successfully',
+        data: aClass
+    })
 })
 
 /**
@@ -96,20 +101,6 @@ const getClassStudents = catchAsync(async (req, res) => {
 });
 
 /**
- * Get detailed students info of a class (with attendance & payment stats)
- */
-const getClassStudentsDetailed = catchAsync(async (req, res) => {
-    const classId = req.params.classId;
-
-    const result = await classService.getClassStudentsDetailed(classId);
-
-    res.send({
-        message: 'Class students detailed info retrieved successfully',
-        data: result
-    });
-});
-
-/**
  * Remove student from class
  */
 const removeStudentFromClass = catchAsync(async (req, res) => {
@@ -132,6 +123,5 @@ module.exports = {
     enrollStudentToClass,
     getClassEnrollmentHistory,
     getClassStudents,
-    getClassStudentsDetailed,
     removeStudentFromClass,
 }

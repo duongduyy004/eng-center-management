@@ -98,26 +98,6 @@ const enrollStudentToClass = async (classId, studentData) => {
         { new: true }
     );
 
-    // Create initial payment record for current month
-    const currentMonth = new Date().getMonth() + 1;
-    const currentYear = new Date().getFullYear();
-
-    try {
-        const paymentService = require('./payment.service');
-        await paymentService.createPayment({
-            studentId: studentData.studentId,
-            classId: classId,
-            month: currentMonth,
-            year: currentYear,
-            totalLessons: classInfo.totalLessons || 8, // Default 8 lessons per month
-            feePerLesson: classInfo.feePerLesson,
-            discountPercent: enrollmentInfo.discountPercent
-        });
-    } catch (error) {
-        // Log error but don't fail enrollment
-        console.error('Failed to create payment record:', error);
-    }
-
     // Return updated student info
     const updatedStudent = await Student.findById(studentData.studentId)
         .populate('userId', 'name email phone')

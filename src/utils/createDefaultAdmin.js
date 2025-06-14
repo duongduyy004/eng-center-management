@@ -13,7 +13,7 @@ const createDefaultAdmin = async () => {
         });
 
         if (existingAdmin) {
-            logger.info('Admin account already exists. Skipping creation.');
+            logger.info(`Admin account already exists. Skipping creation. Admin name: ${existingAdmin.name}`);
             return;
         }
 
@@ -24,6 +24,7 @@ const createDefaultAdmin = async () => {
             email: config.defaultAdmin.email,
             password: hashedPassword,
             role: 'admin',
+            gender: 'male',
             isEmailVerified: true,
             createdAt: new Date(),
             updatedAt: new Date()

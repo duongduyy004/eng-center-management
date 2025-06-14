@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const { Attendance, Student, Class, Teacher } = require('../models');
 const ApiError = require('../utils/ApiError');
+const logger = require('../config/logger');
 
 /**
  * Transform attendance data to match required format
@@ -17,10 +18,8 @@ const transformAttendanceData = (attendance) => {
             id: attendance.classId._id
         },
         date: attendance.date,
-        teacherId: {
-            name: attendance.teacherId.userId.name,
-            id: attendance.teacherId._id
-        }, students: attendance.students.map(student => ({
+        teacherId: attendance.teacherId,
+        students: attendance.students.map(student => ({
             studentId: {
                 name: student.studentId.userId.name,
                 id: student.studentId._id
@@ -42,19 +41,13 @@ const transformAttendanceData = (attendance) => {
  * @returns {Promise<Attendance>}
  */
 const createAttendanceSession = async (attendanceBody) => {
-    const { classId, date = Date.now(), teacherId } = attendanceBody;
+    const { classId, date = Date.now() } = attendanceBody;
 
     // Verify class exists
     const classInfo = await Class.findById(classId);
     if (!classInfo) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Class not found');
     }
-
-    // Verify teacher exists
-    const teacher = await Teacher.findById(teacherId);
-    if (!teacher) {
-        throw new ApiError(httpStatus.NOT_FOUND, 'Teacher not found');
-    }    // Check if attendance session already exists for this class and date
     const targetDate = new Date(date);
     const startOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
     const endOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() + 1);
@@ -84,7 +77,6 @@ const createAttendanceSession = async (attendanceBody) => {
     const attendance = await Attendance.create({
         classId,
         date,
-        teacherId,
         students: studentAttendanceRecords,
         isCompleted: false
     });
@@ -92,7 +84,6 @@ const createAttendanceSession = async (attendanceBody) => {
     return transformAttendanceData(
         await attendance.populate([
             { path: 'classId', select: 'name grade section' },
-            { path: 'teacherId', select: 'userId', populate: { path: 'userId', select: 'name' } },
             { path: 'students.studentId', select: 'userId', populate: { path: 'userId', select: 'name' } }
         ])
     );
@@ -104,7 +95,7 @@ const createAttendanceSession = async (attendanceBody) => {
  * @param {string} teacherId
  * @returns {Promise<Attendance>}
  */
-const getTodayAttendanceSession = async (classId, teacherId) => {
+const getTodayAttendanceSession = async (classId) => {
     // Check if class exists
     const classInfo = await Class.findById(classId);
     if (!classInfo) {
@@ -149,8 +140,7 @@ const getTodayAttendanceSession = async (classId, teacherId) => {
         }
     }).populate([
         { path: 'classId', select: 'name grade section' },
-        { path: 'teacherId', select: 'userId', populate: { path: 'userId', select: 'name' } },
-        { path: 'students.studentId', select: 'userId', populate: { path: 'userId', select: 'name' } }
+        { path: 'students.studentId', select: 'userId studentId', populate: { path: 'userId', select: 'name' } }
     ]);
 
     // If attendance session doesn't exist, create new one
@@ -158,12 +148,11 @@ const getTodayAttendanceSession = async (classId, teacherId) => {
         const attendanceBody = {
             classId,
             date: new Date(),
-            teacherId
         };
         attendance = await createAttendanceSession(attendanceBody);
     } else {
         // Transform existing attendance to required format
-        attendance = transformAttendanceData(attendance);
+        attendance = transformAttendanceData(attendance)
     }
 
     return attendance;
@@ -184,8 +173,6 @@ const updateAttendanceSession = async (attendanceId, studentsData) => {
         throw new ApiError(httpStatus.NOT_FOUND, 'Attendance session not found');
     }
 
-    // Allow editing even if completed (teacher can modify completed attendance)
-
     // Update attendance for each student
     studentsData.forEach(studentData => {
         const studentIndex = attendance.students.findIndex(
@@ -201,10 +188,12 @@ const updateAttendanceSession = async (attendanceId, studentsData) => {
 
     await attendance.save();
 
+    // Auto update/create payment records after attendance update
+    await autoUpdatePaymentRecords(attendance);
+
     return transformAttendanceData(
         await attendance.populate([
             { path: 'classId', select: 'name grade section' },
-            { path: 'teacherId', select: 'userId', populate: { path: 'userId', select: 'name' } },
             { path: 'students.studentId', select: 'userId', populate: { path: 'userId', select: 'name' } }
         ])
     );
@@ -243,9 +232,9 @@ const completeAttendanceSession = async (attendanceId) => {
 const getAttendanceById = async (attendanceId) => {
     const attendance = await Attendance.findById(attendanceId).populate([
         { path: 'classId', select: 'name grade section' },
-        { path: 'teacherId', select: 'userId', populate: { path: 'userId', select: 'name' } },
         { path: 'students.studentId', select: 'userId', populate: { path: 'userId', select: 'name' } }
-    ]); if (!attendance) {
+    ]);
+    if (!attendance) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Attendance record not found');
     }
 
@@ -259,139 +248,8 @@ const getAttendanceById = async (attendanceId) => {
  * @returns {Promise<QueryResult>}
  */
 const queryAttendance = async (filter, options) => {
-    const attendance = await Attendance.paginate(filter, {
-        ...options,
-        populate: [
-            { path: 'classId', select: 'name grade section' },
-            { path: 'teacherId', select: 'userId', populate: { path: 'userId', select: 'name' } },
-            { path: 'students.studentId', select: 'userId', populate: { path: 'userId', select: 'name' } }
-        ]
-    });
+    const attendance = await Attendance.paginate(filter, options);
     return attendance;
-};
-
-/**
- * Get attendance statistics for a class
- * @param {string} classId
- * @param {Object} [dateRange]
- * @param {Date} [dateRange.startDate]
- * @param {Date} [dateRange.endDate]
- * @returns {Promise<Object>}
- */
-const getClassAttendanceStatistics = async (classId, dateRange = {}) => {
-    const { startDate, endDate } = dateRange;
-
-    // Build query
-    const query = { classId };
-    if (startDate || endDate) {
-        query.date = {};
-        if (startDate) query.date.$gte = new Date(startDate);
-        if (endDate) query.date.$lte = new Date(endDate);
-    }
-
-    const attendanceRecords = await Attendance.find(query);
-
-    // Calculate statistics
-    const totalSessions = attendanceRecords.length;
-    let totalStudentRecords = 0;
-    let presentCount = 0;
-    let absentCount = 0;
-    let lateCount = 0;
-
-    attendanceRecords.forEach(record => {
-        record.students.forEach(student => {
-            totalStudentRecords++;
-            if (student.status === 'present') presentCount++;
-            else if (student.status === 'absent') absentCount++;
-            else if (student.status === 'late') lateCount++;
-        });
-    });
-
-    return {
-        classId,
-        totalSessions,
-        totalStudentRecords,
-        attendanceRate: totalStudentRecords > 0 ? (presentCount / totalStudentRecords) * 100 : 0,
-        statistics: {
-            present: presentCount,
-            absent: absentCount,
-            late: lateCount
-        },
-        dateRange: {
-            startDate,
-            endDate
-        }
-    };
-};
-
-/**
- * Get student attendance history
- * @param {string} studentId
- * @param {Object} [dateRange]
- * @param {Date} [dateRange.startDate]
- * @param {Date} [dateRange.endDate]
- * @returns {Promise<Object>}
- */
-const getStudentAttendanceHistory = async (studentId, dateRange = {}) => {
-    const { startDate, endDate } = dateRange;
-
-    // Verify student exists
-    const student = await Student.findById(studentId).populate('userId');
-    if (!student) {
-        throw new ApiError(httpStatus.NOT_FOUND, 'Student not found');
-    }
-
-    // Build query
-    const query = { 'students.studentId': studentId };
-    if (startDate || endDate) {
-        query.date = {};
-        if (startDate) query.date.$gte = new Date(startDate);
-        if (endDate) query.date.$lte = new Date(endDate);
-    }
-
-    const attendanceRecords = await Attendance.find(query)
-        .populate('classId', 'name grade section')
-        .sort({ date: -1 });
-
-    // Extract student's attendance from each record
-    const studentAttendance = attendanceRecords.map(record => {
-        const studentRecord = record.students.find(s =>
-            s.studentId.toString() === studentId
-        ); return {
-            attendanceId: record._id,
-            classId: record.classId._id,
-            className: record.classId.name,
-            date: record.date,
-            status: studentRecord?.status || 'absent',
-            note: studentRecord?.note || '',
-            checkedAt: studentRecord?.checkedAt
-        };
-    });
-
-    // Calculate statistics
-    const totalSessions = studentAttendance.length;
-    const presentCount = studentAttendance.filter(a => a.status === 'present').length;
-    const absentCount = studentAttendance.filter(a => a.status === 'absent').length;
-    const lateCount = studentAttendance.filter(a => a.status === 'late').length;
-
-    return {
-        student: {
-            id: student._id,
-            name: student.userId.name
-        },
-        totalSessions,
-        attendanceRate: totalSessions > 0 ? (presentCount / totalSessions) * 100 : 0,
-        statistics: {
-            present: presentCount,
-            absent: absentCount,
-            late: lateCount
-        },
-        records: studentAttendance,
-        dateRange: {
-            startDate,
-            endDate
-        }
-    };
 };
 
 /**
@@ -405,6 +263,109 @@ const deleteAttendanceById = async (attendanceId) => {
     return attendance;
 };
 
+/**
+ * Auto update/create payment records when attendance is updated
+ * @param {Object} attendance - Attendance document (should be converted to plain object)
+ */
+const autoUpdatePaymentRecords = async (attendance) => {
+    try {
+        const { Payment } = require('../models');
+
+        // Convert Mongoose document to plain object to avoid internal properties
+        const attendanceData = attendance.toObject ? attendance.toObject() : attendance;
+
+        const attendanceDate = new Date(attendanceData.date);
+        const month = attendanceDate.getMonth() + 1;
+        const year = attendanceDate.getFullYear();
+
+        // Get class info with fee details
+        const classInfo = await Class.findById(attendanceData.classId);
+        if (!classInfo || !classInfo.feePerLesson) {
+            console.log('Class fee information not found, skipping payment update');
+            return;
+        }
+
+        // Process each student in the attendance
+        for (const studentAttendance of attendanceData.students) {
+            const studentId = studentAttendance.studentId;
+
+            // Get student's enrollment info for this class
+            const student = await Student.findById(studentId);
+            if (!student) continue;
+
+            const classEnrollment = student.classes.find(
+                c => c.classId.toString() === attendanceData.classId.toString() && c.status === 'active'
+            );
+
+            if (!classEnrollment) continue;
+
+            // Check if payment record exists for this month/year
+            let paymentRecord = await Payment.findOne({
+                studentId: studentId,
+                classId: attendanceData.classId,
+                month: month,
+                year: year
+            });
+
+            // Count total attendance sessions for this month
+            const monthlyAttendance = await Attendance.find({
+                classId: attendanceData.classId,
+                date: {
+                    $gte: new Date(year, month - 1, 1),
+                    $lt: new Date(year, month, 1)
+                }
+            });
+
+            // Count attended sessions for this student
+            let attendedLessons = 0;
+            monthlyAttendance.forEach(att => {
+                const studentRecord = att.students.find(s => s.studentId.toString() === studentId.toString());
+                if (studentRecord && studentRecord.status === 'present') {
+                    attendedLessons++;
+                }
+            });
+
+            const discountPercent = classEnrollment.discountPercent || 0;
+            const feePerLesson = classInfo.feePerLesson;
+            const totalLessons = monthlyAttendance.length;
+            const totalAmount = (attendedLessons * feePerLesson * (100 - discountPercent)) / 100;
+
+            if (paymentRecord) {
+                // Update existing payment record
+                paymentRecord.totalLessons = totalLessons;
+                paymentRecord.attendedLessons = attendedLessons;
+                paymentRecord.amount = totalAmount;
+                paymentRecord.feePerLesson = feePerLesson;
+                paymentRecord.discountPercent = discountPercent;
+                paymentRecord.updatedAt = new Date();
+
+                await paymentRecord.save();
+                logger.log(`Updated payment record for student ${studentId}, month ${month}/${year}`);
+            } else {
+                // Create new payment record
+                const newPayment = new Payment({
+                    studentId: studentId,
+                    classId: attendanceData.classId,
+                    month: month,
+                    year: year,
+                    totalLessons: totalLessons,
+                    attendedLessons: attendedLessons,
+                    amount: totalAmount,
+                    feePerLesson: feePerLesson,
+                    discountPercent: discountPercent,
+                    status: 'pending',
+                    dueDate: new Date(year, month, 5) // Due by 5th of next month
+                });
+
+                await newPayment.save();
+                logger.log(`Created payment record for student ${studentId}, month ${month}/${year}`);
+            }
+        }
+    } catch (error) {
+        console.error('Error updating payment records:', error);
+    }
+};
+
 module.exports = {
     createAttendanceSession,
     getTodayAttendanceSession,
@@ -412,7 +373,5 @@ module.exports = {
     completeAttendanceSession,
     getAttendanceById,
     queryAttendance,
-    getClassAttendanceStatistics,
-    getStudentAttendanceHistory,
     deleteAttendanceById
 };

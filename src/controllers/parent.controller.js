@@ -1,7 +1,7 @@
 const httpStatus = require('http-status');
 const pick = require('../utils/pick');
 const catchAsync = require('../utils/catchAsync');
-const { parentService } = require('../services');
+const { parentService, paymentService } = require('../services');
 
 const createParent = catchAsync(async (req, res) => {
     const { userData, parentData } = req.body;
@@ -46,6 +46,16 @@ const deleteChild = catchAsync(async (req, res) => {
     res.send(child)
 })
 
+const payTuition = catchAsync(async (req, res) => {
+    const { paymentId, amount, method, note } = req.body
+    console.log('check payment id', amount)
+    const result = await paymentService.recordPayment(paymentId, { amount, method, note })
+    res.status(httpStatus.OK).json({
+        message: 'Payment was successfully',
+        data: result
+    })
+})
+
 module.exports = {
     createParent,
     getParents,
@@ -53,5 +63,6 @@ module.exports = {
     updateParent,
     deleteParent,
     addChild,
-    deleteChild
+    deleteChild,
+    payTuition
 };

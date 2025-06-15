@@ -52,17 +52,19 @@ const paymentSchema = new mongoose.Schema({
         enum: ['pending', 'partial', 'paid', 'overdue'],
         default: 'pending'
     },
-    notes: String,
+    note: String,
     paymentHistory: [{
         amount: Number,
-        date: Date,
+        date: {
+            type: Date,
+            default: Date.now
+        },
         method: {
             type: String,
             enum: ['cash', 'bank_transfer', 'card'],
             default: 'cash'
         },
-        note: String,
-        receivedBy: { type: mongoose.Types.ObjectId, ref: 'User' }
+        note: String
     }]
 },
     {
@@ -73,7 +75,7 @@ const paymentSchema = new mongoose.Schema({
 // Enhanced pre-save middleware with better logging
 paymentSchema.pre('save', function (next) {
     // Calculate amounts
-    this.totalAmount = this.totalLessons * this.feePerLesson;
+    this.totalAmount = this.attendedLessons * this.feePerLesson;
     this.discountAmount = (this.totalAmount * this.discountPercent) / 100;
     this.finalAmount = this.totalAmount - this.discountAmount;
     this.remainingAmount = this.finalAmount - this.paidAmount;
@@ -86,14 +88,6 @@ paymentSchema.pre('save', function (next) {
     } else {
         this.status = 'paid';
     }
-
-    console.log('Calculated values:', {
-        totalAmount: this.totalAmount,
-        discountAmount: this.discountAmount,
-        finalAmount: this.finalAmount,
-        remainingAmount: this.remainingAmount,
-        status: this.status
-    });
 
     next();
 });

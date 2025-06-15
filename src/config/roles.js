@@ -15,7 +15,7 @@ const allRoles = {
     'getPayments', 'managePayments',
     'getAttendance', 'manageAttendance'
   ],
-  parent: ['getPayments', 'getAttendance']
+  parent: ['getPayments', 'getAttendance', 'payTuition']
 };
 
 const roles = Object.keys(allRoles);

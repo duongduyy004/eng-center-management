@@ -13,6 +13,10 @@ router
     .delete(auth('manageParents'), parentController.deleteChild)
 
 router
+    .route('/pay-tuition')
+    .patch(auth('payTuition'), parentController.payTuition)
+
+router
     .route('/:parentId')
     .get(auth('getParents'), parentController.getParent)
     .patch(auth('manageParents'), parentController.updateParent)

@@ -315,12 +315,11 @@ const autoUpdatePaymentRecords = async (attendance) => {
                     $lt: new Date(year, month, 1)
                 }
             });
-
             // Count attended sessions for this student
             let attendedLessons = 0;
             monthlyAttendance.forEach(att => {
                 const studentRecord = att.students.find(s => s.studentId.toString() === studentId.toString());
-                if (studentRecord && studentRecord.status === 'present') {
+                if (studentRecord && (studentRecord.status === 'present' || studentRecord.status === 'late')) {
                     attendedLessons++;
                 }
             });
@@ -328,19 +327,16 @@ const autoUpdatePaymentRecords = async (attendance) => {
             const discountPercent = classEnrollment.discountPercent || 0;
             const feePerLesson = classInfo.feePerLesson;
             const totalLessons = monthlyAttendance.length;
-            const totalAmount = (attendedLessons * feePerLesson * (100 - discountPercent)) / 100;
 
             if (paymentRecord) {
                 // Update existing payment record
                 paymentRecord.totalLessons = totalLessons;
                 paymentRecord.attendedLessons = attendedLessons;
-                paymentRecord.amount = totalAmount;
                 paymentRecord.feePerLesson = feePerLesson;
                 paymentRecord.discountPercent = discountPercent;
-                paymentRecord.updatedAt = new Date();
 
                 await paymentRecord.save();
-                logger.log(`Updated payment record for student ${studentId}, month ${month}/${year}`);
+                logger.info(`Updated payment record for student ${studentId}, month ${month}/${year}`);
             } else {
                 // Create new payment record
                 const newPayment = new Payment({
@@ -350,15 +346,13 @@ const autoUpdatePaymentRecords = async (attendance) => {
                     year: year,
                     totalLessons: totalLessons,
                     attendedLessons: attendedLessons,
-                    amount: totalAmount,
                     feePerLesson: feePerLesson,
                     discountPercent: discountPercent,
                     status: 'pending',
-                    dueDate: new Date(year, month, 5) // Due by 5th of next month
                 });
 
                 await newPayment.save();
-                logger.log(`Created payment record for student ${studentId}, month ${month}/${year}`);
+                logger.info(`Created payment record for student ${studentId}, month ${month}/${year}`);
             }
         }
     } catch (error) {

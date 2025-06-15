@@ -42,7 +42,7 @@ const defaultRoutes = [
     route: paymentRoute
   },
   {
-    path: '/attendance',
+    path: '/attendances',
     route: attendanceRoute
   }
 ];

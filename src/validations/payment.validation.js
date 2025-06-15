@@ -11,7 +11,7 @@ const createPayment = {
         feePerLesson: Joi.number().min(0).required(),
         discountPercent: Joi.number().min(0).max(100).default(0),
         attendedLessons: Joi.number().integer().min(0).default(0),
-        notes: Joi.string().allow('').default('')
+        note: Joi.string().allow('').default('')
     })
 };
 
@@ -44,7 +44,7 @@ const updatePayment = {
             feePerLesson: Joi.number().min(0),
             discountPercent: Joi.number().min(0).max(100),
             attendedLessons: Joi.number().integer().min(0),
-            notes: Joi.string().allow('')
+            note: Joi.string().allow('')
         })
         .min(1)
 };

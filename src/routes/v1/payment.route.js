@@ -8,8 +8,7 @@ const router = express.Router();
 
 router
     .route('/')
-    .post(auth('managePayments'), validate(paymentValidation.createPayment), paymentController.createPayment)
-    .get(auth('getPayments'), validate(paymentValidation.getPayments), paymentController.getPayments);
+    .get(auth('getPayments'), paymentController.getPayments);
 
 router
     .route('/statistics')
@@ -18,18 +17,6 @@ router
 router
     .route('/overdue')
     .get(auth('getPayments'), validate(paymentValidation.getOverduePayments), paymentController.getOverduePayments);
-
-router
-    .route('/student/:studentId')
-    .get(auth('getPayments'), validate(paymentValidation.getPaymentsByStudent), paymentController.getPaymentsByStudent);
-
-router
-    .route('/class/:classId')
-    .get(auth('getPayments'), validate(paymentValidation.getPaymentsByClass), paymentController.getPaymentsByClass);
-
-router
-    .route('/report/:month/:year')
-    .get(auth('getPayments'), validate(paymentValidation.getMonthlyPaymentReport), paymentController.getMonthlyPaymentReport);
 
 router
     .route('/:paymentId')

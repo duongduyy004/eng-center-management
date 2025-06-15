@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const { Payment } = require('../models');
+const { Payment, Student } = require('../models');
 const ApiError = require('../utils/ApiError');
 
 /**
@@ -22,95 +22,13 @@ const queryPayments = async (filter, options) => {
  * @returns {Promise<Payment>}
  */
 const getPaymentById = async (id) => {
-    return Payment.findById(id).populate('studentId classId', 'name');
-};
-
-/**
- * Create a payment
- * @param {Object} paymentBody
- * @returns {Promise<Payment>}
- */
-const createPayment = async (paymentBody) => {
-    const {
-        studentId,
-        classId,
-        month,
-        year,
-        totalLessons,
-        feePerLesson,
-        discountPercent = 0,
-        attendedLessons = 0,
-        notes = ''
-    } = paymentBody;
-
-    // Check if payment already exists for this student, class, month, and year
-    const existingPayment = await Payment.findOne({
-        studentId,
-        classId,
-        month,
-        year
-    });
-
-    if (existingPayment) {
-        throw new ApiError(httpStatus.BAD_REQUEST, 'Payment record already exists for this month');
-    }
-
-    // Create payment record
-    const payment = Payment({
-        studentId,
-        classId,
-        month,
-        year,
-        totalLessons,
-        attendedLessons,
-        feePerLesson,
-        discountPercent,
-        notes,
-        // The following fields will be calculated automatically by the model's pre-save middleware:
-        // totalAmount, discountAmount, finalAmount, remainingAmount, status
-    });
-
-    await payment.save();
-
-    console.log('Payment created with middleware calculations:', {
-        totalAmount: payment.totalAmount,
-        discountAmount: payment.discountAmount,
-        finalAmount: payment.finalAmount,
-        status: payment.status
-    });
-
-    return payment;
-};
-
-/**
- * Update payment by id
- * @param {ObjectId} paymentId
- * @param {Object} updateBody
- * @returns {Promise<Payment>}
- */
-const updatePaymentById = async (paymentId, updateBody) => {
-    const payment = await getPaymentById(paymentId);
+    const payment = await Payment.findById(id).populate('studentId classId', 'name');
     if (!payment) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Payment not found');
     }
-    Object.assign(payment, updateBody);
-    await payment.save();
-    return payment;
+    return payment
 };
 
-/**
- * Delete payment by id
- * @param {ObjectId} paymentId
- * @returns {Promise<Payment>}
- */
-const deletePaymentById = async (paymentId) => {
-    const payment = await getPaymentById(paymentId);
-    if (!payment) {
-        throw new ApiError(httpStatus.NOT_FOUND, 'Payment not found');
-    }
-    await payment.remove();
-    return payment;
-};
 
 /**
  * Record a payment
@@ -119,12 +37,14 @@ const deletePaymentById = async (paymentId) => {
  * @returns {Promise<Payment>}
  */
 const recordPayment = async (paymentId, paymentData) => {
-    const { amount, method = 'cash', note = '', receivedBy } = paymentData;
+    const { amount, method = 'cash', note = '' } = paymentData;
 
     const payment = await getPaymentById(paymentId);
     if (!payment) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Payment not found');
     }
+
+    const student = await Student.findById(payment.studentId.parentId)
 
     if (payment.status === 'paid') {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Payment is already fully paid');
@@ -134,8 +54,8 @@ const recordPayment = async (paymentId, paymentData) => {
     if (amount <= 0) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Payment amount must be greater than 0');
     }
-
-    if (payment.paidAmount + amount > payment.finalAmount) {
+    console.log("chekc paid amount and amount", payment.paidAmount, amount, payment.paidAmount + +amount)
+    if (payment.paidAmount + +amount > payment.finalAmount) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Payment amount exceeds remaining balance');
     }
 
@@ -145,11 +65,10 @@ const recordPayment = async (paymentId, paymentData) => {
         date: new Date(),
         method,
         note,
-        receivedBy
     });
 
     // Update paid amount
-    payment.paidAmount += amount;
+    payment.paidAmount += +amount;
     payment.paymentDate = new Date();
 
     await payment.save();
@@ -300,9 +219,6 @@ const sendPaymentReminder = async (paymentId) => {
 module.exports = {
     queryPayments,
     getPaymentById,
-    createPayment,
-    updatePaymentById,
-    deletePaymentById,
     recordPayment,
     getPaymentStatistics,
     getPaymentsByStudent,

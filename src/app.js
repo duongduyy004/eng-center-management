@@ -13,9 +13,9 @@ const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes/v1');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
-const { serveUploads } = require('./middlewares/static');
 const createDefaultAdmin = require('./utils/createDefaultAdmin');
 const logger = require('./config/logger');
+const { uploadAvatar } = require('./services/user.service');
 
 const app = express();
 
@@ -44,9 +44,6 @@ app.use(compression());
 app.use(cors());
 app.options('*', cors());
 
-// Serve static files (avatars)
-app.use('/uploads', serveUploads);
-
 // jwt authentication
 app.use(passport.initialize());
 passport.use('jwt', jwtStrategy);
@@ -58,6 +55,29 @@ if (config.env === 'production') {
 
 // v1 api routes
 app.use('/api/v1', routes);
+
+// Health check endpoints
+app.get('/', (req, res) => {
+  res.json({
+    message: 'English Center Management API',
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: config.env,
+    cloudinary: {
+      configured: !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET)
+    }
+  });
+});
+
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {

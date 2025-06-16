@@ -1,7 +1,8 @@
 const httpStatus = require('http-status');
 const { User } = require('../models');
 const ApiError = require('../utils/ApiError');
-const { deleteAvatar } = require('../middlewares/upload');
+const { cloudinary } = require('../config/cloudinary');
+const logger = require('../config/logger');
 
 /**
  * Create a user
@@ -48,46 +49,39 @@ const getUserByEmail = async (email) => {
 };
 
 /**
- * Update user avatar
+ * Upload user avatar
  * @param {ObjectId} userId
- * @param {string} avatarPath
+ * @param {string} avatarUrl - Cloudinary URL
  * @returns {Promise<User>}
  */
-const updateUserAvatar = async (userId, avatarPath) => {
+const uploadAvatar = async (userId, avatarUrl) => {
   const user = await getUserById(userId);
 
-  // Delete old avatar if exists
-  if (user?.avatar) {
-    await deleteAvatar(user.avatar);
+  // Delete old avatar from Cloudinary if exists
+  if (user.avatar && user.avatar.includes('cloudinary')) {
+    try {
+      const publicId = extractPublicIdFromUrl(user.avatar);
+      await cloudinary.uploader.destroy(publicId);
+    } catch (error) {
+      logger.warn('Failed to delete old avatar:', error.message);
+    }
   }
 
-  // Update user with new avatar
-  Object.assign(user, { avatar: avatarPath });
+  // Update user with new avatar URL
+  Object.assign(user, { avatar: avatarUrl });
   await user.save();
-
   return user;
 };
 
+
 /**
- * Delete user avatar
- * @param {ObjectId} userId
- * @returns {Promise<User>}
+ * Extract Cloudinary public ID from URL
+ * @param {string} url
+ * @returns {string}
  */
-const deleteUserAvatar = async (userId) => {
-  const user = await getUserById(userId);
-
-  if (!user.avatar) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User does not have an avatar');
-  }
-
-  // Delete avatar file
-  await deleteAvatar(user.avatar);
-
-  // Remove avatar from user
-  user.avatar = undefined;
-  await user.save();
-
-  return user;
+const extractPublicIdFromUrl = (url) => {
+  const matches = url.match(/\/([^\/]+)\.(jpg|jpeg|png|gif|webp)$/);
+  return matches ? matches[1] : null;
 };
 
 /**
@@ -140,6 +134,5 @@ module.exports = {
   getUserByEmail,
   updateUserById,
   deleteUserById,
-  updateUserAvatar,
-  deleteUserAvatar,
+  uploadAvatar,
 };

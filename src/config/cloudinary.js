@@ -1,6 +1,8 @@
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
+const ApiError = require('../utils/ApiError');
+const httpStatus = require('http-status');
 
 // Configure Cloudinary
 cloudinary.config({
@@ -14,7 +16,7 @@ const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: 'english-center/avatars',
-        format: async (req, file) => 'jpg',
+        allowedFormats: ['jpg', 'png'],
         public_id: (req, file) => {
             const timestamp = Date.now();
             const randomString = Math.random().toString(36).substring(2, 15);
@@ -37,11 +39,8 @@ const uploadCloudinary = multer({
         if (file.mimetype.startsWith('image/')) {
             cb(null, true);
         } else {
-            cb(new Error('Only image files are allowed'), false);
+            cb(new ApiError(httpStatus.BAD_REQUEST, 'Only image files are allowed'), false);
         }
-    },
-    limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB
     }
 });
 

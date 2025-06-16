@@ -48,7 +48,6 @@ const deleteChild = catchAsync(async (req, res) => {
 
 const payTuition = catchAsync(async (req, res) => {
     const { paymentId, amount, method, note } = req.body
-    console.log('check payment id', amount)
     const result = await paymentService.recordPayment(paymentId, { amount, method, note })
     res.status(httpStatus.OK).json({
         message: 'Payment was successfully',

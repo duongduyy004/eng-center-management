@@ -191,7 +191,6 @@ const deleteChild = async (parentId, studentId) => {
     if (!parent) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Parent not found');
     }
-    console.log('check parent', parent)
 
     const student = await Student.findById(studentId);
     if (!student.parentId || student?.parentId.toString() !== parentId) {

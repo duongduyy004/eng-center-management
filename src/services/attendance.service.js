@@ -284,7 +284,7 @@ const autoUpdatePaymentRecords = async (attendance) => {
         // Get class info with fee details
         const classInfo = await Class.findById(attendanceData.classId);
         if (!classInfo || !classInfo.feePerLesson) {
-            console.log('Class fee information not found, skipping payment update');
+            logger.warn('Class fee information not found, skipping payment update');
             return;
         }
 

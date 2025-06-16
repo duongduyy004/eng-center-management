@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const { Payment, Student } = require('../models');
 const ApiError = require('../utils/ApiError');
+const logger = require('../config/logger');
 
 /**
  * Query for payments
@@ -54,7 +55,7 @@ const recordPayment = async (paymentId, paymentData) => {
     if (amount <= 0) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Payment amount must be greater than 0');
     }
-    console.log("chekc paid amount and amount", payment.paidAmount, amount, payment.paidAmount + +amount)
+
     if (payment.paidAmount + +amount > payment.finalAmount) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Payment amount exceeds remaining balance');
     }
@@ -208,7 +209,7 @@ const sendPaymentReminder = async (paymentId) => {
     }
 
     // TODO: Implement email/SMS notification logic
-    console.log(`Payment reminder sent for payment ID: ${paymentId}`);
+    logger.info(`Payment reminder sent for payment ID: ${paymentId}`);
 
     return {
         message: 'Payment reminder sent successfully',

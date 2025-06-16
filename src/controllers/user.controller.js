@@ -39,8 +39,6 @@ const uploadAvatar = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'No avatar file uploaded');
   }
 
-  console.log('Avatar file received:', req.file);
-
   // Update user's avatar
   const user = await userService.updateUserById(req.user.id, { avatar: req.file.path });
 
@@ -90,8 +88,6 @@ const uploadImage = catchAsync(async (req, res) => {
   if (!req.file) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'No image file uploaded');
   }
-
-  console.log('Image file received:', req.file);
 
   res.status(httpStatus.OK).json({
     success: true,

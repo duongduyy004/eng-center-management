@@ -69,10 +69,40 @@ const deleteStudent = {
     })
 };
 
+const getMonthlyChanges = {
+    query: Joi.object().keys({
+        year: Joi.number().integer().min(2020).max(2030),
+        months: Joi.number().integer().min(1).max(12),
+        startDate: Joi.date(),
+        endDate: Joi.date(),
+        classId: Joi.string().custom(objectId)
+    })
+};
+
+const getStudentSchedule = {
+    params: Joi.object().keys({
+        studentId: Joi.string().custom(objectId)
+    })
+};
+
+const getStudentAttendance = {
+    params: Joi.object().keys({
+        studentId: Joi.string().custom(objectId)
+    }),
+    query: Joi.object().keys({
+        startDate: Joi.date(),
+        endDate: Joi.date().greater(Joi.ref('startDate')),
+        classId: Joi.string().custom(objectId)
+    })
+};
+
 module.exports = {
     createStudent,
     getStudents,
     getStudent,
     updateStudent,
-    deleteStudent
+    deleteStudent,
+    getMonthlyChanges,
+    getStudentSchedule,
+    getStudentAttendance
 };

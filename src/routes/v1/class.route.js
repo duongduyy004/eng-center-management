@@ -35,5 +35,9 @@ router.delete('/:classId/students',
   classController.removeStudentFromClass
 );
 
+// Assign teacher to class
+router.route('/:classId/teacher')
+  .patch(auth('manageTeachers'), validate(classValidation.assignTeacherToClass), classController.assignTeacherToClass)
+  .delete(auth('manageTeachers'), validate(classValidation.unassignTeacherFromClass), classController.unassignTeacherFromClass);
 
 module.exports = router;

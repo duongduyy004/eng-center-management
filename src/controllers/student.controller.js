@@ -35,10 +35,39 @@ const deleteStudent = catchAsync(async (req, res) => {
     res.status(httpStatus.NO_CONTENT).send();
 })
 
+const getMonthlyStudentChanges = catchAsync(async (req, res) => {
+    const filter = pick(req.query, ['year', 'months', 'startDate', 'endDate', 'classId']);
+    const result = await studentService.getMonthlyStudentChanges(filter);
+    res.send({
+        message: 'Monthly student changes retrieved successfully',
+        data: result
+    });
+});
+
+const getStudentSchedule = catchAsync(async (req, res) => {
+    const schedule = await studentService.getStudentSchedule(req.params.studentId);
+    res.send({
+        message: 'Student schedule retrieved successfully',
+        data: schedule
+    });
+});
+
+const getStudentAttendance = catchAsync(async (req, res) => {
+    const filter = pick(req.query, ['startDate', 'endDate', 'classId']);
+    const attendance = await studentService.getStudentAttendance(req.params.studentId, filter);
+    res.send({
+        message: 'Student attendance retrieved successfully',
+        data: attendance
+    });
+});
+
 module.exports = {
     createStudent,
     getStudents,
     getStudent,
     updateStudent,
     deleteStudent,
+    getMonthlyStudentChanges,
+    getStudentSchedule,
+    getStudentAttendance,
 }

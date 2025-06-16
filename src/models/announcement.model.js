@@ -4,26 +4,35 @@ const { softDelete, toJSON, paginate } = require('./plugins')
 const announcementSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     content: {
         type: String,
         required: true
     },
-    type: {
+    description: {
         type: String,
-        enum: ['new_class', 'general', 'promotion', 'event'],
-        default: 'general'
+        trim: true
+    },
+    imageUrl: {
+        type: String,
+        trim: true
+    },
+    linkUrl: {
+        type: String,
+        trim: true
     },
     displayType: {
         type: String,
-        enum: ['popup', 'banner', 'notification'],
+        enum: ['popup', 'banner', 'notification', 'carousel'],
         default: 'banner'
     },
-    targetAudience: {
-        type: String,
-        enum: ['all', 'parents', 'students', 'teachers'],
-        default: 'all'
+    priority: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 5
     },
     isActive: {
         type: Boolean,
@@ -33,14 +42,19 @@ const announcementSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    imageUrl: String,
-    relatedClassId: { type: mongoose.Types.ObjectId, ref: 'Class' }, // Nếu quảng cáo về lớp học
-    createdBy: { type: mongoose.Types.ObjectId, ref: 'User', required: true },
+    endDate: {
+        type: Date
+    }
 },
     {
         timestamps: true,
     }
 )
+
+// Indexes for better performance
+announcementSchema.index({ isActive: 1, startDate: 1, endDate: 1 });
+announcementSchema.index({ priority: -1 });
+announcementSchema.index({ tags: 1 });
 
 announcementSchema.plugin(toJSON)
 announcementSchema.plugin(paginate);

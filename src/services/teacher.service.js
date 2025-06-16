@@ -70,10 +70,88 @@ const deleteTeacherById = async (teacherId) => {
     return teacher;
 }
 
+/**
+ * Get available teachers (active teachers)
+ * @returns {Promise<Array>}
+ */
+const getAvailableTeachers = async () => {
+    const teachers = await Teacher.find({ isActive: true })
+        .populate('userId', 'name email phone')
+        .populate('classes', 'name grade section year status');
+
+    return teachers.map(teacher => ({
+        id: teacher._id,
+        name: teacher.userId?.name || 'N/A',
+        email: teacher.userId?.email || 'N/A',
+        phone: teacher.userId?.phone || 'N/A',
+        salaryPerLesson: teacher.salaryPerLesson,
+        qualifications: teacher.qualifications,
+        specialization: teacher.specialization,
+        totalClasses: teacher.classes?.length || 0,
+        classes: teacher.classes?.map(cls => ({
+            id: cls._id,
+            name: cls.name,
+            grade: cls.grade,
+            section: cls.section,
+            year: cls.year,
+            status: cls.status
+        })) || []
+    }));
+};
+
+/**
+ * Get classes assigned to a teacher
+ * @param {ObjectId} teacherId
+ * @returns {Promise<Object>}
+ */
+const getTeacherClasses = async (teacherId) => {
+    const teacher = await Teacher.findById(teacherId)
+        .populate('userId', 'name email phone')
+        .populate({
+            path: 'classes',
+            select: 'name grade section year status schedule maxStudents feePerLesson room description totalLessons',
+            options: { sort: { createdAt: -1 } }
+        });
+
+    if (!teacher) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Teacher not found');
+    }
+
+    return {
+        teacher: {
+            id: teacher._id,
+            name: teacher.userId?.name || 'N/A',
+            email: teacher.userId?.email || 'N/A',
+            phone: teacher.userId?.phone || 'N/A',
+            salaryPerLesson: teacher.salaryPerLesson,
+            qualifications: teacher.qualifications,
+            specialization: teacher.specialization,
+            isActive: teacher.isActive
+        },
+        classes: teacher.classes?.map(cls => ({
+            id: cls._id,
+            name: cls.name,
+            grade: cls.grade,
+            section: cls.section,
+            year: cls.year,
+            status: cls.status,
+            schedule: cls.schedule,
+            maxStudents: cls.maxStudents,
+            feePerLesson: cls.feePerLesson,
+            room: cls.room,
+            description: cls.description,
+            totalLessons: cls.totalLessons
+        })) || [],
+        totalClasses: teacher.classes?.length || 0
+    };
+};
+
 module.exports = {
     createTeacher,
     queryTeachers,
     getTeacherById,
     updateTeacherById,
-    deleteTeacherById
+    deleteTeacherById,
+    getAvailableTeachers,
+    getTeacherClasses
 }

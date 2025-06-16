@@ -191,6 +191,9 @@ const updateAttendanceSession = async (attendanceId, studentsData) => {
     // Auto update/create payment records after attendance update
     await autoUpdatePaymentRecords(attendance);
 
+    // Auto update/create teacher payment records after attendance update
+    await autoUpdateTeacherPaymentRecords(attendance);
+
     return transformAttendanceData(
         await attendance.populate([
             { path: 'classId', select: 'name grade section' },
@@ -357,6 +360,22 @@ const autoUpdatePaymentRecords = async (attendance) => {
         }
     } catch (error) {
         console.error('Error updating payment records:', error);
+    }
+};
+
+/**
+ * Auto update/create teacher payment records when attendance is updated
+ * @param {Object} attendance - Attendance object
+ */
+const autoUpdateTeacherPaymentRecords = async (attendance) => {
+    try {
+        const teacherPaymentService = require('./teacherPayment.service');
+        await teacherPaymentService.autoUpdateTeacherPayment({
+            classId: attendance.classId,
+            date: attendance.date
+        });
+    } catch (error) {
+        console.error('Error updating teacher payment records:', error);
     }
 };
 

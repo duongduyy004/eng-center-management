@@ -25,7 +25,7 @@ const createClass = catchAsync(async (req, res) => {
 
 const updateClass = catchAsync(async (req, res) => {
     const aClass = await classService.updateClass(req.params.classId, req.body)
-    res.status(httpStatus.OK), json({
+    res.status(httpStatus.OK).json({
         message: 'Update class successfully',
         data: aClass
     })
@@ -115,6 +115,35 @@ const removeStudentFromClass = catchAsync(async (req, res) => {
     });
 });
 
+/**
+ * Assign teacher to class
+ */
+const assignTeacherToClass = catchAsync(async (req, res) => {
+    const { classId } = req.params;
+    const { teacherId } = req.body;
+
+    const result = await classService.assignTeacherToClass(classId, teacherId);
+
+    res.send({
+        message: 'Teacher assigned to class successfully',
+        data: result
+    });
+});
+
+/**
+ * Unassign teacher from class
+ */
+const unassignTeacherFromClass = catchAsync(async (req, res) => {
+    const { classId } = req.params;
+
+    const result = await classService.unassignTeacherFromClass(classId);
+
+    res.send({
+        message: 'Teacher unassigned from class successfully',
+        data: result
+    });
+});
+
 module.exports = {
     getClasses,
     createClass,
@@ -124,4 +153,6 @@ module.exports = {
     getClassEnrollmentHistory,
     getClassStudents,
     removeStudentFromClass,
+    assignTeacherToClass,
+    unassignTeacherFromClass,
 }

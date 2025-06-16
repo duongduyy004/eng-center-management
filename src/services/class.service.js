@@ -1,5 +1,5 @@
 const httpStatus = require("http-status");
-const { Class, Student } = require("../models");
+const { Class, Student, Teacher } = require("../models");
 const ApiError = require("../utils/ApiError");
 
 const queryClasses = async (filter, options) => {
@@ -238,6 +238,112 @@ const removeStudentFromClass = async (classId, studentId) => {
     };
 };
 
+/**
+ * Assign teacher to class
+ * @param {ObjectId} classId
+ * @param {ObjectId} teacherId
+ * @returns {Promise<Object>}
+ */
+const assignTeacherToClass = async (classId, teacherId) => {
+    // Verify class exists
+    const classInfo = await getClassById(classId);
+
+    // Check if teacher exists and is active
+    const teacher = await Teacher.findById(teacherId).populate('userId', 'name email phone');
+    if (!teacher) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Teacher not found');
+    }
+
+    if (!teacher.isActive) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Teacher is not active');
+    }
+
+    // Check if class already has a teacher assigned
+    if (classInfo.teacherId) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Class already has a teacher assigned. Please unassign the current teacher first.');
+    }
+
+    // Assign teacher to class
+    await Class.findByIdAndUpdate(classId, { teacherId: teacherId });
+
+    // Add class to teacher's classes array if not already present
+    if (!teacher.classes.includes(classId)) {
+        await Teacher.findByIdAndUpdate(
+            teacherId,
+            { $addToSet: { classes: classId } }
+        );
+    }
+
+    // Get updated class info with teacher details
+    const updatedClass = await Class.findById(classId).populate('teacherId', 'userId salaryPerLesson qualifications specialization');
+
+    return {
+        class: {
+            id: updatedClass._id,
+            name: updatedClass.name,
+            grade: updatedClass.grade,
+            section: updatedClass.section,
+            year: updatedClass.year,
+            teacher: {
+                id: teacher._id,
+                name: teacher.userId?.name || 'N/A',
+                email: teacher.userId?.email || 'N/A',
+                phone: teacher.userId?.phone || 'N/A',
+                salaryPerLesson: teacher.salaryPerLesson,
+                qualifications: teacher.qualifications,
+                specialization: teacher.specialization
+            }
+        },
+        assignmentDate: new Date(),
+        message: 'Teacher assigned to class successfully'
+    };
+};
+
+/**
+ * Unassign teacher from class
+ * @param {ObjectId} classId
+ * @returns {Promise<Object>}
+ */
+const unassignTeacherFromClass = async (classId) => {
+    // Verify class exists
+    const classInfo = await Class.findById(classId).populate('teacherId', 'userId');
+    if (!classInfo) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Class not found');
+    }
+
+    // Check if class not has a teacher assigned
+    if (!classInfo.teacherId) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Class does not have a teacher assigned');
+    }
+
+    const teacherId = classInfo.teacherId._id;
+
+    // Remove teacher from class
+    await Class.findByIdAndUpdate(classId, { $unset: { teacherId: 1 } });
+
+    // Remove class from teacher's classes array
+    const teacherInfo = await Teacher.findByIdAndUpdate(
+        teacherId,
+        { $pull: { classes: classId } }
+    ).populate('userId');
+
+    return {
+        class: {
+            id: classInfo._id,
+            name: classInfo.name,
+            grade: classInfo.grade,
+            section: classInfo.section,
+            year: classInfo.year
+        },
+        unassignedTeacher: {
+            id: teacherId,
+            name: teacherInfo.userId?.name || 'N/A'
+        },
+        unassignmentDate: new Date(),
+        message: 'Teacher unassigned from class successfully'
+    };
+};
+
 module.exports = {
     queryClasses,
     createClass,
@@ -245,5 +351,7 @@ module.exports = {
     getClassById,
     enrollStudentToClass,
     getClassStudents,
-    removeStudentFromClass
+    removeStudentFromClass,
+    assignTeacherToClass,
+    unassignTeacherFromClass
 }

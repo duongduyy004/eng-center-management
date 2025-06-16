@@ -8,6 +8,8 @@ const teacherRoute = require('./teacher.route')
 const parentRoute = require('./parent.route')
 const paymentRoute = require('./payment.route')
 const attendanceRoute = require('./attendance.route')
+const teacherPaymentRoute = require('./teacherPayment.route')
+const announcementRoute = require('./announcement.route')
 const config = require('../../config/config');
 
 const router = express.Router();
@@ -44,6 +46,14 @@ const defaultRoutes = [
   {
     path: '/attendances',
     route: attendanceRoute
+  },
+  {
+    path: '/teacher-payments',
+    route: teacherPaymentRoute
+  },
+  {
+    path: '/announcements',
+    route: announcementRoute
   }
 ];
 

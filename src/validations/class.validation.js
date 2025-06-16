@@ -108,6 +108,21 @@ const removeStudentFromClass = {
     )
 };
 
+const assignTeacherToClass = {
+    params: Joi.object().keys({
+        classId: Joi.string().custom(objectId)
+    }),
+    body: Joi.object().keys({
+        teacherId: Joi.string().custom(objectId).required()
+    })
+};
+
+const unassignTeacherFromClass = {
+    params: Joi.object().keys({
+        classId: Joi.string().custom(objectId)
+    })
+};
+
 module.exports = {
     createClass,
     getClasses,
@@ -116,5 +131,7 @@ module.exports = {
     enrollStudent,
     getClassStudents,
     getClassStudentsDetailed,
-    removeStudentFromClass
+    removeStudentFromClass,
+    assignTeacherToClass,
+    unassignTeacherFromClass
 };

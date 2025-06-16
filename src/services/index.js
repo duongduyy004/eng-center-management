@@ -8,3 +8,5 @@ module.exports.parentService = require('./parent.service');
 module.exports.teacherService = require('./teacher.service');
 module.exports.paymentService = require('./payment.service');
 module.exports.attendanceService = require('./attendance.service');
+module.exports.teacherPaymentService = require('./teacherPayment.service');
+module.exports.announcementService = require('./announcement.service');

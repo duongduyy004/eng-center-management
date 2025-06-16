@@ -37,10 +37,28 @@ const deleteTeacher = catchAsync(async (req, res) => {
     res.status(httpStatus.NO_CONTENT).send();
 });
 
+const getAvailableTeachers = catchAsync(async (req, res) => {
+    const teachers = await teacherService.getAvailableTeachers();
+    res.send({
+        message: 'Available teachers retrieved successfully',
+        data: teachers
+    });
+});
+
+const getTeacherClasses = catchAsync(async (req, res) => {
+    const classes = await teacherService.getTeacherClasses(req.params.teacherId);
+    res.send({
+        message: 'Teacher classes retrieved successfully',
+        data: classes
+    });
+});
+
 module.exports = {
     createTeacher,
     getTeachers,
     getTeacher,
     updateTeacher,
-    deleteTeacher
+    deleteTeacher,
+    getAvailableTeachers,
+    getTeacherClasses
 };

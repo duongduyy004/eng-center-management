@@ -2,24 +2,25 @@ const express = require('express');
 const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
 const { parentController } = require('../../controllers');
+const { parentValidation } = require('../../validations');
 
 const router = express.Router();
 
 router
     .route('/')
-    .post(auth('manageParents'), parentController.createParent)
-    .get(auth('getParents'), parentController.getParents)
-    .patch(auth('manageParents'), parentController.addChild)
-    .delete(auth('manageParents'), parentController.deleteChild)
+    .post(auth('manageParents'), validate(parentValidation.createParent), parentController.createParent)
+    .get(auth('getParents'), validate(parentValidation.getParents), parentController.getParents)
+    .patch(auth('manageParents'), validate(parentValidation.addChild), parentController.addChild)
+    .delete(auth('manageParents'), validate(parentValidation.deleteChild), parentController.deleteChild)
 
 router
     .route('/pay-tuition')
-    .patch(auth('payTuition'), parentController.payTuition)
+    .patch(auth('payTuition'), validate(parentValidation.payTuition), parentController.payTuition)
 
 router
     .route('/:parentId')
-    .get(auth('getParents'), parentController.getParent)
-    .patch(auth('manageParents'), parentController.updateParent)
-    .delete(auth('manageParents'), parentController.deleteParent);
+    .get(auth('getParents'), validate(parentValidation.getParent), parentController.getParent)
+    .patch(auth('manageParents'), validate(parentValidation.updateParent), parentController.updateParent)
+    .delete(auth('manageParents'), validate(parentValidation.deleteParent), parentController.deleteParent);
 
 module.exports = router;

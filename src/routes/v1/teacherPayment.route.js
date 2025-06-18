@@ -8,13 +8,7 @@ const router = express.Router();
 
 router
     .route('/')
-    .get(auth('getTeacherPayments'), teacherPaymentController.getTeacherPayments);
-
-router
-    .route('/statistics')
-    .get(auth('getTeacherPayments'), validate(teacherPaymentValidation.getTeacherPaymentStatistics), teacherPaymentController.getTeacherPaymentStatistics);
-
-
+    .get(auth('getTeacherPayments'), validate(teacherPaymentValidation.getTeacherPayments), teacherPaymentController.getTeacherPayments);
 router
     .route('/:teacherPaymentId')
     .get(auth('getTeacherPayments'), validate(teacherPaymentValidation.getTeacherPayment), teacherPaymentController.getTeacherPayment)

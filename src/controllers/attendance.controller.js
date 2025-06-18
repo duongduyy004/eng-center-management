@@ -4,7 +4,7 @@ const catchAsync = require('../utils/catchAsync');
 const { attendanceService } = require('../services');
 
 const getAttendanceRecords = catchAsync(async (req, res) => {
-    const filter = pick(req.query, ['classId', 'date', 'isCompleted']);
+    const filter = pick(req.query, ['classId', 'date']);
     const options = pick(req.query, ['sortBy', 'limit', 'page']);
     const result = await attendanceService.queryAttendance(filter, options);
     res.send(result);

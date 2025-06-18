@@ -4,4 +4,6 @@ module.exports.paymentValidation = require('./payment.validation');
 module.exports.attendanceValidation = require('./attendance.validation');
 module.exports.teacherPaymentValidation = require('./teacherPayment.validation');
 module.exports.announcementValidation = require('./announcement.validation');
-
+module.exports.studentValidation = require('./student.validation');
+module.exports.teacherValidation = require('./teacher.validation');
+module.exports.parentValidation = require('./parent.validation');

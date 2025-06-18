@@ -13,7 +13,8 @@ const ApiError = require("../utils/ApiError")
 const createTeacher = async (teacherBody) => {
     const { userData, teacherData } = teacherBody
     const user = await userService.createUser({ ...userData, role: 'teacher' })
-    return await Teacher.create({ ...teacherData, userId: user.id })
+    const teacher = await Teacher.create({ ...teacherData, userId: user.id })
+    return await teacher.populate('userId')
 }
 
 const queryTeachers = async (filter, options) => {

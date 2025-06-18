@@ -33,7 +33,6 @@ const teacherPaymentSchema = new mongoose.Schema({
         enum: ['pending', 'paid'],
         default: 'pending'
     },
-    notes: String,
     paymentHistory: {
         amount: Number,
         date: Date,

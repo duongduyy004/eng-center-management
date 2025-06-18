@@ -9,11 +9,11 @@ const createTeacher = {
             password: Joi.string().required().custom(password),
             phone: Joi.string(),
             address: Joi.string(),
-            dateOfBirth: Joi.date(),
+            dayOfBirth: Joi.date(),
             gender: Joi.string().valid('male', 'female', 'other')
         }).required(),
         teacherData: Joi.object().keys({
-            salaryPerLesson: Joi.number().required(),
+            salaryPerLesson: Joi.number(),
             qualifications: Joi.array().items(Joi.string()),
             specialization: Joi.array().items(Joi.string()),
             description: Joi.string(),
@@ -49,7 +49,7 @@ const updateTeacher = {
             email: Joi.string().email(),
             phone: Joi.string(),
             address: Joi.string(),
-            dateOfBirth: Joi.date(),
+            dayOfBirth: Joi.date(),
             gender: Joi.string().valid('male', 'female', 'other')
         }),
         teacherData: Joi.object().keys({

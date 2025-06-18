@@ -20,7 +20,9 @@ const createStudent = async (studentBody) => {
 
     const user = await userService.createUser({ ...userData, role: 'student' })
 
-    return await Student.create({ ...studentData, userId: user.id })
+    const student = await Student.create({ ...studentData, userId: user.id })
+
+    return await student.populate('userId')
 }
 
 const queryStudents = async (filter, options) => {

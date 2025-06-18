@@ -13,17 +13,12 @@ router
 router
     .route('/:attendanceId')
     .get(auth('getAttendance'), validate(attendanceValidation.getAttendance), attendanceController.getAttendance)
-    .patch(auth('manageAttendance'), attendanceController.updateAttendanceSession);
+    .patch(auth('manageAttendance'), validate(attendanceValidation.updateAttendanceSession), attendanceController.updateAttendanceSession);
 
 // Get today's attendance session for a class
 router
     .route('/:classId/today')
-    .get(auth('getAttendance'), attendanceController.getTodayAttendanceSession);
-
-// Complete attendance session
-router
-    .route('/:attendanceId/complete')
-    .patch(auth('manageAttendance'), validate(attendanceValidation.completeAttendanceSession), attendanceController.completeAttendanceSession);
+    .get(auth('getAttendance'), validate(attendanceValidation.getTodayAttendanceSession), attendanceController.getTodayAttendanceSession);
 
 module.exports = router;
 

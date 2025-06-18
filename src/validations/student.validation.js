@@ -1,17 +1,18 @@
 const Joi = require('joi');
-const { objectId } = require('./custom.validation');
+const { objectId, password } = require('./custom.validation');
 
 const createStudent = {
     body: Joi.object().keys({
         userData: Joi.object().keys({
             name: Joi.string().required(),
             email: Joi.string().email().required(),
+            password: Joi.string().custom(password).required(),
+            dayOfBirth: Joi.string(),
+            address: Joi.string(),
+            gender: Joi.string(),
             phone: Joi.string(),
         }).required(),
         studentData: Joi.object().keys({
-            dateOfBirth: Joi.date(),
-            address: Joi.string(),
-            parentId: Joi.string().custom(objectId),
             classes: Joi.object().keys({
                 classId: Joi.string().custom(objectId).required(),
                 discountPercent: Joi.number().min(0).max(100).default(0)
@@ -23,7 +24,6 @@ const createStudent = {
 const getStudents = {
     query: Joi.object().keys({
         name: Joi.string(),
-        role: Joi.string(),
         sortBy: Joi.string().valid(
             'createdAt:asc', 'createdAt:desc',
             'name:asc', 'name:desc',
@@ -37,9 +37,6 @@ const getStudents = {
 const getStudent = {
     params: Joi.object().keys({
         studentId: Joi.string().custom(objectId)
-    }),
-    query: Joi.object().keys({
-        populate: Joi.string()
     })
 };
 
@@ -49,16 +46,17 @@ const updateStudent = {
     }),
     body: Joi.object().keys({
         userData: Joi.object().keys({
-            name: Joi.string(),
-            email: Joi.string().email(),
+            name: Joi.string().required(),
+            email: Joi.string().email().required(),
+            dayOfBirth: Joi.string(),
+            address: Joi.string(),
+            gender: Joi.string(),
             phone: Joi.string(),
         }),
         studentData: Joi.object().keys({
-            dateOfBirth: Joi.date(),
-            address: Joi.string(),
-            parentId: Joi.string().custom(objectId),
             classId: Joi.string().custom(objectId),
-            discountPercent: Joi.number().min(0).max(100)
+            discountPercent: Joi.number().min(0).max(100),
+            status: Joi.string()
         })
     })
 };
@@ -79,7 +77,7 @@ const getMonthlyChanges = {
     })
 };
 
-const getStudentSchedule = {
+const getSchedule = {
     params: Joi.object().keys({
         studentId: Joi.string().custom(objectId)
     })
@@ -103,6 +101,6 @@ module.exports = {
     updateStudent,
     deleteStudent,
     getMonthlyChanges,
-    getStudentSchedule,
+    getSchedule,
     getStudentAttendance
 };

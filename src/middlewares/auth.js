@@ -2,7 +2,7 @@ const passport = require('passport');
 const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const { roleRights } = require('../config/roles');
-const { Student, Teacher, Parent } = require('../models');
+const { Student, Teacher, Parent, TeacherPayment } = require('../models');
 
 const verifyCallback = (req, resolve, reject, requiredRights) => async (err, user, info) => {
   if (err || info || !user) {
@@ -13,7 +13,7 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
   if (requiredRights.length) {
     const userRights = roleRights.get(user.role);
     const hasRequiredRights = requiredRights.every((requiredRight) => userRights.includes(requiredRight));
-    if (!hasRequiredRights && userId !== user.id) {
+    if (!hasRequiredRights && userId.toString() !== user.id) {
       return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
     }
   }
@@ -30,6 +30,10 @@ const getUserId = async (params) => {
   }
   else if (params.parentId) {
     return (await Parent.findById(params.parentId))?.userId
+  }
+  else if (params.teacherPaymentId) {
+    const teacher = await TeacherPayment.findById(params.teacherPaymentId).populate('teacherId')
+    return (await Teacher.findById(teacher.teacherId))?.userId
   }
 }
 

@@ -17,12 +17,6 @@ const getTeacherPayment = catchAsync(async (req, res) => {
     res.send(teacherPayment);
 });
 
-const getTeacherPaymentStatistics = catchAsync(async (req, res) => {
-    const filter = pick(req.query, ['teacherId', 'classId', 'month', 'year', 'status']);
-    const stats = await teacherPaymentService.getTeacherPaymentStatistics(filter);
-    res.send(stats);
-});
-
 
 const recordTeacherPayment = catchAsync(async (req, res) => {
     const teacherPayment = await teacherPaymentService.recordTeacherPayment(
@@ -36,6 +30,5 @@ const recordTeacherPayment = catchAsync(async (req, res) => {
 module.exports = {
     getTeacherPayments,
     getTeacherPayment,
-    getTeacherPaymentStatistics,
     recordTeacherPayment,
 };

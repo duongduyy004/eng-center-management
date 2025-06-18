@@ -15,7 +15,7 @@ const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 const createDefaultAdmin = require('./utils/createDefaultAdmin');
 const logger = require('./config/logger');
-const { uploadAvatar } = require('./services/user.service');
+const fileUpload = require('express-fileupload')
 
 const app = express();
 
@@ -23,6 +23,9 @@ if (config.env !== 'test') {
   app.use(morgan.successHandler);
   app.use(morgan.errorHandler);
 }
+
+//config file upload
+app.use(fileUpload())
 
 // set security HTTP headers
 app.use(helmet());

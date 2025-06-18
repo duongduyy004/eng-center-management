@@ -33,7 +33,6 @@ const createClass = async (classBody) => {
 };
 
 const updateClass = async (classId, classUpdate) => {
-    const { type } = classUpdate
     const aClass = await Class.findById(classId)
     if (!aClass) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Class not found')
@@ -142,7 +141,7 @@ const getClassStudents = async (classId, options = {}) => {
     const studentsResult = await Student.paginate(filter, queryOptions);
 
     // Transform student data to include class-specific info
-    const studentsWithClassInfo = studentsResult.results.map(student => {
+    const studentsWithClassInfo = studentsResult.data.map(student => {
         const classEnrollment = student.classes.find(
             c => c.classId.toString() === classId.toString() && c.status === 'active'
         );

@@ -35,6 +35,7 @@ const deleteUser = catchAsync(async (req, res) => {
 });
 
 const uploadAvatar = catchAsync(async (req, res) => {
+  console.log('Body (before multer):', req.body);
   if (!req.file) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'No avatar file uploaded');
   }
@@ -59,48 +60,6 @@ const uploadAvatar = catchAsync(async (req, res) => {
 });
 
 
-const uploadUserAvatar = catchAsync(async (req, res) => {
-  if (!req.file) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'No avatar file uploaded');
-  }
-
-  const { userId } = req.params;
-  const user = await userService.updateUserById(userId, { avatar: req.file.path });
-
-  res.status(httpStatus.OK).json({
-    success: true,
-    message: 'User avatar uploaded successfully',
-    data: {
-      url: req.file.path,
-      publicId: req.file.filename,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar
-      }
-    }
-  });
-});
-
-
-const uploadImage = catchAsync(async (req, res) => {
-  if (!req.file) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'No image file uploaded');
-  }
-
-  res.status(httpStatus.OK).json({
-    success: true,
-    message: 'Image uploaded successfully',
-    data: {
-      url: req.file.path,
-      publicId: req.file.filename,
-      originalName: req.file.originalname,
-      size: req.file.size
-    }
-  });
-});
-
 module.exports = {
   createUser,
   getUsers,
@@ -108,6 +67,4 @@ module.exports = {
   updateUser,
   deleteUser,
   uploadAvatar,
-  uploadUserAvatar,
-  uploadImage
 };

@@ -7,8 +7,7 @@ const createDefaultAdmin = async () => {
     try {
         const existingAdmin = await User.findOne({
             $or: [
-                { email: config.defaultAdmin.email },
-                { role: 'admin' }
+                { email: config.defaultAdmin.email }
             ]
         });
 
@@ -17,12 +16,10 @@ const createDefaultAdmin = async () => {
             return;
         }
 
-        const hashedPassword = await bcrypt.hash(config.defaultAdmin.password, 8);
-
         const adminData = {
             name: config.defaultAdmin.name || 'System Administrator',
             email: config.defaultAdmin.email,
-            password: hashedPassword,
+            password: config.defaultAdmin.password,
             role: 'admin',
             gender: 'male',
             isEmailVerified: true,

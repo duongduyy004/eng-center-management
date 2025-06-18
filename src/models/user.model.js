@@ -40,7 +40,7 @@ const userSchema = mongoose.Schema(
       enum: roles,
       default: 'user',
     },
-    dayOfBirth: Date,
+    dayOfBirth: String,
     phone: String,
     address: String,
     gender: {

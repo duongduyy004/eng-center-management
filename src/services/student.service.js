@@ -14,10 +14,6 @@ const ApiError = require("../utils/ApiError");
 const createStudent = async (studentBody) => {
     const { userData, studentData } = studentBody
     //create user for student
-    if (studentData.classes && !studentData.classes.classId) {
-        throw new ApiError(httpStatus.BAD_REQUEST, 'Please pick a class')
-    }
-
     const user = await userService.createUser({ ...userData, role: 'student' })
 
     const student = await Student.create({ ...studentData, userId: user.id })

@@ -3,21 +3,13 @@ const { objectId, password } = require('./custom.validation');
 
 const createStudent = {
     body: Joi.object().keys({
-        userData: Joi.object().keys({
-            name: Joi.string().required(),
-            email: Joi.string().email().required(),
-            password: Joi.string().custom(password).required(),
-            dayOfBirth: Joi.string(),
-            address: Joi.string(),
-            gender: Joi.string(),
-            phone: Joi.string(),
-        }).required(),
-        studentData: Joi.object().keys({
-            classes: Joi.object().keys({
-                classId: Joi.string().custom(objectId).required(),
-                discountPercent: Joi.number().min(0).max(100).default(0)
-            })
-        })
+        name: Joi.string().required(),
+        email: Joi.string().required().email(),
+        password: Joi.string().required().custom(password),
+        phone: Joi.string(),
+        address: Joi.string(),
+        dayOfBirth: Joi.string(),
+        gender: Joi.string().valid('male', 'female', 'other')
     })
 };
 

@@ -10,7 +10,7 @@ const createParent = {
             password: Joi.string().min(8).required(),
             dayOfBirth: Joi.string(),
             address: Joi.string(),
-            gender: Joi.string(),
+            gender: Joi.string().valid('male', 'female', 'other'),
         }).required(),
         parentData: Joi.object().keys({
             canSeeTeacherInfo: Joi.boolean().default(true)

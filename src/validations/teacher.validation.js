@@ -9,7 +9,7 @@ const createTeacher = {
             password: Joi.string().required().custom(password),
             phone: Joi.string(),
             address: Joi.string(),
-            dayOfBirth: Joi.date(),
+            dayOfBirth: Joi.string(),
             gender: Joi.string().valid('male', 'female', 'other')
         }).required(),
         teacherData: Joi.object().keys({

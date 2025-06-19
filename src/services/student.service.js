@@ -12,11 +12,12 @@ const ApiError = require("../utils/ApiError");
  * @returns 
  */
 const createStudent = async (studentBody) => {
-    const { userData, studentData } = studentBody
+    const { email, password, name, dayOfBirth, phone, address, gender } = studentBody
+    userData = { email, password, name, dayOfBirth, phone, address, gender }
     //create user for student
     const user = await userService.createUser({ ...userData, role: 'student' })
 
-    const student = await Student.create({ ...studentData, userId: user.id })
+    const student = await Student.create({ userId: user.id })
 
     return await student.populate('userId')
 }

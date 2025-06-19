@@ -56,12 +56,14 @@ const getUserByEmail = async (email) => {
  */
 const uploadAvatar = async (userId, avatarUrl) => {
   const user = await getUserById(userId);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
 
   // Delete old avatar from Cloudinary if exists
   if (user.avatar && user.avatar.includes('cloudinary')) {
     try {
-      const publicId = extractPublicIdFromUrl(user.avatar);
-      await cloudinary.uploader.destroy(publicId);
+      await deleteAvatar(user.avatar);
     } catch (error) {
       logger.warn('Failed to delete old avatar:', error.message);
     }
@@ -73,6 +75,27 @@ const uploadAvatar = async (userId, avatarUrl) => {
   return user;
 };
 
+/**
+ * Delete avatar from Cloudinary
+ * @param {string} avatarUrl - Cloudinary URL
+ * @returns {Promise<void>}
+ */
+const deleteAvatar = async (avatarUrl) => {
+  try {
+    const publicId = extractPublicIdFromUrl(avatarUrl);
+    if (publicId) {
+      const result = await cloudinary.uploader.destroy(publicId);
+      if (result.result === 'ok') {
+        logger.info(`Successfully deleted avatar with public ID: ${publicId}`);
+      } else {
+        logger.warn(`Failed to delete avatar with public ID: ${publicId}, result: ${result.result}`);
+      }
+    }
+  } catch (error) {
+    logger.error('Error deleting avatar from Cloudinary:', error);
+    throw error;
+  }
+};
 
 /**
  * Extract Cloudinary public ID from URL
@@ -80,8 +103,27 @@ const uploadAvatar = async (userId, avatarUrl) => {
  * @returns {string}
  */
 const extractPublicIdFromUrl = (url) => {
-  const matches = url.match(/\/([^\/]+)\.(jpg|jpeg|png|gif|webp)$/);
-  return matches ? matches[1] : null;
+  try {
+    // Handle different Cloudinary URL formats
+    // Example: https://res.cloudinary.com/demo/image/upload/v1234567890/english-center/avatars/avatar-1234567890-abc123.jpg
+    const regex = /\/([^\/]+\/[^\/]+\/[^\/]+)\.(?:jpg|jpeg|png|gif|webp)$/i;
+    const match = url.match(regex);
+
+    if (match) {
+      return match[1]; // This includes the folder path
+    }
+
+    // Fallback: try to extract just the filename without extension
+    const filenameMatch = url.match(/\/([^\/]+)\.[^\/]+$/);
+    if (filenameMatch) {
+      return `english-center/avatars/${filenameMatch[1]}`;
+    }
+
+    return null;
+  } catch (error) {
+    logger.error('Error extracting public ID from URL:', error);
+    return null;
+  }
 };
 
 /**
@@ -103,8 +145,12 @@ const updateUserById = async (userId, updateBody) => {
   }
 
   // Handle avatar deletion if needed
-  if (updateBody.avatar === null && user.avatar) {
-    await deleteAvatar(user.avatar);
+  if (updateBody.avatar === null && user.avatar && user.avatar.includes('cloudinary')) {
+    try {
+      await deleteAvatar(user.avatar);
+    } catch (error) {
+      logger.warn('Failed to delete avatar during user update:', error.message);
+    }
     updateBody.avatar = undefined;
   }
 
@@ -123,6 +169,16 @@ const deleteUserById = async (userId) => {
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
+
+  // Delete user's avatar from Cloudinary if exists
+  if (user.avatar && user.avatar.includes('cloudinary')) {
+    try {
+      await deleteAvatar(user.avatar);
+    } catch (error) {
+      logger.warn('Failed to delete avatar during user deletion:', error.message);
+    }
+  }
+
   await user.delete();
   return user;
 };
@@ -135,4 +191,5 @@ module.exports = {
   updateUserById,
   deleteUserById,
   uploadAvatar,
+  deleteAvatar,
 };

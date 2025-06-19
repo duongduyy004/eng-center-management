@@ -39,8 +39,8 @@ const uploadAvatar = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'No avatar file uploaded');
   }
 
-  // Update user's avatar
-  const user = await userService.updateUserById(req.user.id, { avatar: req.file.path });
+  // Use the uploadAvatar service method which handles old avatar deletion
+  const user = await userService.uploadAvatar(req.user.id, req.file.path);
 
   res.status(httpStatus.OK).json({
     success: true,

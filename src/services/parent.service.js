@@ -18,6 +18,14 @@ const queryParents = async (filter, options) => {
         filter.userId = { $in: userIds };
         delete filter.name;
     }
+    if (filter.email) {
+        const users = await User.find({
+            email: { $regex: filter.email, $options: 'i' }
+        }).select('_id');
+        const userIds = users.map(user => user._id);
+        filter.userId = { $in: userIds };
+        delete filter.email;
+    }
     const parents = await Parent.paginate(filter, { ...options, populate: 'userId' });
     return parents;
 };

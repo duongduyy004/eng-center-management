@@ -26,6 +26,7 @@ const getTeachers = {
     query: Joi.object().keys({
         name: Joi.string(),
         isActive: Joi.boolean(),
+        email: Joi.string().email(),
         specialization: Joi.string(),
         sortBy: Joi.string(),
         limit: Joi.number().integer(),

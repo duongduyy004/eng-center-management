@@ -16,6 +16,7 @@ const createStudent = {
 const getStudents = {
     query: Joi.object().keys({
         name: Joi.string(),
+        email: Joi.string().email(),
         sortBy: Joi.string().valid(
             'createdAt:asc', 'createdAt:desc',
             'name:asc', 'name:desc',

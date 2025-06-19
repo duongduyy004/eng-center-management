@@ -13,7 +13,7 @@ const createParent = catchAsync(async (req, res) => {
 });
 
 const getParents = catchAsync(async (req, res) => {
-    const filter = pick(req.query, ['name', 'email', 'phone']);
+    const filter = pick(req.query, ['name', 'email']);
     const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
     const result = await parentService.queryParents(filter, options);
     res.send(result);

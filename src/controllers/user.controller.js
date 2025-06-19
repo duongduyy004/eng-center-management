@@ -35,7 +35,6 @@ const deleteUser = catchAsync(async (req, res) => {
 });
 
 const uploadAvatar = catchAsync(async (req, res) => {
-  console.log('Body (before multer):', req.body);
   if (!req.file) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'No avatar file uploaded');
   }

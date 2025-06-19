@@ -20,6 +20,6 @@ router
 
 // Avatar upload routes
 router.route('/me/avatar')
-  .post(auth(), userController.uploadAvatar)
+  .post(auth(), uploadSingle, userController.uploadAvatar)
 
 module.exports = router;

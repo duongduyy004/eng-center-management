@@ -24,8 +24,6 @@ if (config.env !== 'test') {
   app.use(morgan.errorHandler);
 }
 
-//config file upload
-app.use(fileUpload())
 
 // set security HTTP headers
 app.use(helmet());

@@ -75,10 +75,12 @@ const enrollStudent = {
     params: Joi.object().keys({
         classId: Joi.string().custom(objectId)
     }),
-    body: Joi.object().keys({
-        studentId: Joi.string().custom(objectId).required(),
-        discountPercent: Joi.number().min(0).max(100)
-    })
+    body: Joi.array().items(
+        Joi.object().keys({
+            studentId: Joi.string().custom(objectId).required(),
+            discountPercent: Joi.number().min(0).max(100)
+        })
+    )
 };
 
 const getClassStudents = {

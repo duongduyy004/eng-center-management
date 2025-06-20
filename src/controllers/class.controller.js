@@ -38,12 +38,15 @@ const enrollStudentToClass = catchAsync(async (req, res) => {
     const studentData = req.body
     const classId = req.params.classId;
 
-    const result = await classService.enrollStudentToClass(classId, studentData)
+    studentData.map(async item => {
+        const result = await classService.enrollStudentToClass(classId, item)
 
-    res.status(httpStatus.CREATED).send({
-        message: 'Student enrolled successfully',
-        data: result
-    });
+        res.status(httpStatus.CREATED).send({
+            message: 'Student enrolled successfully',
+            data: result
+        });
+    }
+    )
 });
 
 /**

@@ -39,7 +39,7 @@ const queryStudents = async (filter, options) => {
         filter.userId = { $in: userIds };
         delete filter.email;
     }
-    const users = await Student.paginate(filter, { ...options, populate: 'userId' })
+    const users = await Student.paginate(filter, { ...options, populate: 'userId,parentId.userId' })
     return users;
 };
 

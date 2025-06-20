@@ -43,12 +43,20 @@ const updateClass = async (classId, classUpdate) => {
 }
 
 /**
- * Enroll student to a class
+ * Enroll students to a class
  * @param {ObjectId} classId
- * @param {ObjectId} studentData
+ * @param {Array} studentData - Array of {studentId, discountPercent}
  * @returns {Promise<Object>}
  */
 const enrollStudentToClass = async (classId, studentData) => {
+    // Ensure studentData is an array
+    if (!Array.isArray(studentData)) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Student data must be an array');
+    }
+
+    if (studentData.length === 0) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Student data array cannot be empty');
+    }
 
     // Check if class exists and is active
     const classInfo = await getClassById(classId);
@@ -60,56 +68,79 @@ const enrollStudentToClass = async (classId, studentData) => {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Cannot enroll to a closed class');
     }
 
-    // Check if class has available slots
-    if (classInfo.currentStudents >= classInfo.maxStudents) {
-        throw new ApiError(httpStatus.BAD_REQUEST, 'Class is full');
+    // Get current number of enrolled students
+    const currentEnrolledCount = await Student.countDocuments({
+        'classes.classId': classId,
+        'classes.status': 'active'
+    });
+
+    // Check if adding all students would exceed class capacity
+    if (currentEnrolledCount + studentData.length > classInfo.maxStudents) {
+        throw new ApiError(httpStatus.BAD_REQUEST,
+            `Cannot enroll ${studentData.length} students. Class capacity: ${classInfo.maxStudents}, Current enrolled: ${currentEnrolledCount}, Available slots: ${classInfo.maxStudents - currentEnrolledCount}`);
     }
 
-    // Check if student exists
-    const student = await Student.findById(studentData.studentId);
-    if (!student) {
-        throw new ApiError(httpStatus.NOT_FOUND, 'Student not found');
-    }
+    const results = [];
 
-    // Check if student is already enrolled in this class
-    const existingEnrollment = student.classes.find(
-        c => {
-            if (c.classId) {
-                return c.classId.toString() === classId.toString() && c.status === 'active'
-            }
+    // First, validate all students before enrolling any of them
+    for (const item of studentData) {
+
+        // Check if student exists
+        const student = await Student.findById(item.studentId);
+        if (!student) {
+            throw new ApiError(httpStatus.NOT_FOUND, `Student with ID ${item.studentId} not found`);
         }
-    );
-    if (existingEnrollment) {
-        throw new ApiError(httpStatus.BAD_REQUEST, 'Student is already enrolled in this class');
+
+        // Check if student is already enrolled in this class
+        const existingEnrollment = student.classes.find(
+            c => c.classId && c.classId.toString() === classId.toString() && c.status === 'active'
+        );
+
+        if (existingEnrollment) {
+            throw new ApiError(httpStatus.BAD_REQUEST, `Student with ID ${item.studentId} is already enrolled in this class`);
+        }
     }
 
-    // Add student to class
-    const enrollmentInfo = {
-        classId: classId,
-        discountPercent: studentData.discountPercent || 0,
-        enrollmentDate: new Date(),
-        status: 'active'
-    };
+    for (const item of studentData) {
+        try {
+            // Add student to class
+            const enrollmentInfo = {
+                classId: classId,
+                discountPercent: item.discountPercent || 0,
+                enrollmentDate: new Date(),
+                status: 'active'
+            };
 
-    await Student.findByIdAndUpdate(
-        studentData.studentId,
-        { $push: { classes: enrollmentInfo } },
-        { new: true }
-    );
+            const updatedStudent = await Student.findByIdAndUpdate(
+                item.studentId,
+                { $push: { classes: enrollmentInfo } },
+                { new: true, populate: { path: 'userId', select: 'name email phone' } }
+            );
 
-    // Return updated student info
-    const updatedStudent = await Student.findById(studentData.studentId)
-        .populate('userId', 'name email phone')
-        .populate('classes.classId', 'name grade section year');
+            results.push({
+                studentId: item.studentId,
+                studentName: updatedStudent.userId?.name || 'N/A',
+                discountPercent: item.discountPercent || 0,
+                enrollmentDate: enrollmentInfo.enrollmentDate,
+                status: 'enrolled'
+            });
+
+        } catch (error) {
+            console.error(`Error enrolling student ${item.studentId}:`, error);
+            // If any enrollment fails after validation, throw error immediately
+            throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `Failed to enroll student ${item.studentId}: ${error.message}`);
+        }
+    }
 
     return {
-        student: updatedStudent,
-        enrollmentInfo,
-        classInfo: {
-            id: classInfo._id,
-            name: classInfo.name,
-            maxStudents: classInfo.maxStudents
-        }
+        id: classInfo._id,
+        name: classInfo.name,
+        grade: classInfo.grade,
+        section: classInfo.section,
+        year: classInfo.year,
+        maxStudents: classInfo.maxStudents,
+        currentEnrolled: currentEnrolledCount + results.length,
+        successfulCount: results.length
     };
 };
 
@@ -167,7 +198,6 @@ const getClassStudents = async (classId, options = {}) => {
             section: classInfo.section,
             year: classInfo.year,
             maxStudents: classInfo.maxStudents,
-            currentStudents: studentsWithClassInfo.length,
             teacher: classInfo.teacherId
         },
         students: studentsWithClassInfo,

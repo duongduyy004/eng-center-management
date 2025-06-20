@@ -32,21 +32,29 @@ const updateClass = catchAsync(async (req, res) => {
 })
 
 /**
- * Enroll student to class
+ * Enroll student(s) to class
  */
 const enrollStudentToClass = catchAsync(async (req, res) => {
-    const studentData = req.body
     const classId = req.params.classId;
+    let studentData = req.body;
 
-    studentData.map(async item => {
-        const result = await classService.enrollStudentToClass(classId, item)
-
-        res.status(httpStatus.CREATED).send({
-            message: 'Student enrolled successfully',
-            data: result
+    // Ensure we have an array format
+    if (!Array.isArray(studentData)) {
+        return res.status(httpStatus.BAD_REQUEST).json({
+            message: 'Request body must be an array of student objects with studentId and discountPercent',
+            expectedFormat: '[{ "studentId": "64a1b2c3d4e5f6789012345", "discountPercent": 10 }]'
         });
     }
-    )
+
+    const result = await classService.enrollStudentToClass(classId, studentData);
+
+    const successCount = result.successfulCount;
+    delete successfulCount
+
+    res.status(httpStatus.CREATED).json({
+        message: `Successfully enrolled ${successCount} student(s) to class`,
+        data: result
+    });
 });
 
 /**

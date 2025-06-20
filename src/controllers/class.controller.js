@@ -49,7 +49,7 @@ const enrollStudentToClass = catchAsync(async (req, res) => {
     const result = await classService.enrollStudentToClass(classId, studentData);
 
     const successCount = result.successfulCount;
-    delete successfulCount
+    delete result.successfulCount
 
     res.status(httpStatus.CREATED).json({
         message: `Successfully enrolled ${successCount} student(s) to class`,

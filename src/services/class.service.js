@@ -2,6 +2,52 @@ const httpStatus = require("http-status");
 const { Class, Student, Teacher } = require("../models");
 const ApiError = require("../utils/ApiError");
 
+/**
+ * Convert time string (HH:mm) to minutes since midnight
+ * @param {string} timeString - Time in format "HH:mm" or "HH:mm:ss"
+ * @returns {number} - Minutes since midnight
+ */
+const convertTimeToMinutes = (timeString) => {
+    if (!timeString) return 0;
+
+    try {
+        const parts = timeString.split(':');
+        const hours = parseInt(parts[0], 10);
+        const minutes = parseInt(parts[1], 10);
+        return hours * 60 + minutes;
+    } catch (error) {
+        console.warn(`Invalid time format: ${timeString}`);
+        return 0;
+    }
+};
+
+/**
+ * Check if two time ranges overlap
+ * @param {string} start1 - Start time of first range
+ * @param {string} end1 - End time of first range  
+ * @param {string} start2 - Start time of second range
+ * @param {string} end2 - End time of second range
+ * @returns {boolean} - True if ranges overlap
+ */
+const doTimeRangesOverlap = (start1, end1, start2, end2) => {
+    const start1Minutes = convertTimeToMinutes(start1);
+    const end1Minutes = convertTimeToMinutes(end1);
+    const start2Minutes = convertTimeToMinutes(start2);
+    const end2Minutes = convertTimeToMinutes(end2);
+
+    return start2Minutes < end1Minutes && end2Minutes > start1Minutes;
+};
+
+/**
+ * Convert day numbers to day names
+ * @param {Array} dayNumbers - Array of numbers (0=Sunday, 1=Monday, etc.)
+ * @returns {string} - Comma-separated day names
+ */
+const getDayNames = (dayNumbers) => {
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return dayNumbers.map(num => dayNames[num] || `Day${num}`).join(', ');
+};
+
 const queryClasses = async (filter, options) => {
     const aClass = await Class.paginate(filter, options);
     return aClass;
@@ -68,6 +114,13 @@ const enrollStudentToClass = async (classId, studentData) => {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Cannot enroll to a closed class');
     }
 
+    // Validate class schedule data for conflict checking
+    if (!classInfo.schedule || !classInfo.schedule.dayOfWeeks || !classInfo.schedule.timeSlots) {
+        console.warn(`Class ${classId} has incomplete schedule data, skipping schedule conflict validation`);
+    } else {
+        console.log(`Target class schedule: Days ${getDayNames(classInfo.schedule.dayOfWeeks)}, Time ${classInfo.schedule.timeSlots.startTime}-${classInfo.schedule.timeSlots.endTime}`);
+    }
+
     // Get current number of enrolled students
     const currentEnrolledCount = await Student.countDocuments({
         'classes.classId': classId,
@@ -86,7 +139,10 @@ const enrollStudentToClass = async (classId, studentData) => {
     for (const item of studentData) {
 
         // Check if student exists
-        const student = await Student.findById(item.studentId);
+        const student = await Student.findById(item.studentId).populate({
+            path: 'classes.classId',
+            select: 'schedule name grade section'
+        });
         if (!student) {
             throw new ApiError(httpStatus.NOT_FOUND, `Student with ID ${item.studentId} not found`);
         }
@@ -98,6 +154,98 @@ const enrollStudentToClass = async (classId, studentData) => {
 
         if (existingEnrollment) {
             throw new ApiError(httpStatus.BAD_REQUEST, `Student with ID ${item.studentId} is already enrolled in this class`);
+        }
+
+        // Check for schedule conflicts (only if target class has proper schedule)
+        if (classInfo.schedule && classInfo.schedule.dayOfWeeks && classInfo.schedule.timeSlots) {
+            const hasScheduleConflict = student.classes.some(enrollment => {
+                if (enrollment.status !== 'active' || !enrollment.classId || !enrollment.classId.schedule) {
+                    return false;
+                }
+
+                const existingSchedule = enrollment.classId.schedule;
+                const newSchedule = classInfo.schedule;
+
+                // Skip if either class doesn't have proper schedule data
+                if (!existingSchedule.dayOfWeeks || !existingSchedule.timeSlots ||
+                    !newSchedule.dayOfWeeks || !newSchedule.timeSlots) {
+                    return false;
+                }
+
+                // Check if there's any overlapping day
+                const hasOverlappingDay = existingSchedule.dayOfWeeks.some(day =>
+                    newSchedule.dayOfWeeks.includes(day)
+                );
+
+                if (!hasOverlappingDay) {
+                    return false; // No overlapping days, no conflict
+                }
+
+                // Check if time slots overlap
+                const existingStart = convertTimeToMinutes(existingSchedule.timeSlots.startTime);
+                const existingEnd = convertTimeToMinutes(existingSchedule.timeSlots.endTime);
+                const newStart = convertTimeToMinutes(newSchedule.timeSlots.startTime);
+                const newEnd = convertTimeToMinutes(newSchedule.timeSlots.endTime);
+
+                // Check if time slots overlap
+                const timeOverlap = (newStart < existingEnd && newEnd > existingStart);
+
+                if (timeOverlap) {
+                    return true;
+                }
+
+                return false;
+            });
+
+            if (hasScheduleConflict) {
+                const conflictingClass = student.classes.find(enrollment => {
+                    if (enrollment.status !== 'active' || !enrollment.classId || !enrollment.classId.schedule) {
+                        return false;
+                    }
+
+                    const existingSchedule = enrollment.classId.schedule;
+                    const newSchedule = classInfo.schedule;
+
+                    if (!existingSchedule.dayOfWeeks || !existingSchedule.timeSlots ||
+                        !newSchedule.dayOfWeeks || !newSchedule.timeSlots) {
+                        return false;
+                    }
+
+                    const hasOverlappingDay = existingSchedule.dayOfWeeks.some(day =>
+                        newSchedule.dayOfWeeks.includes(day)
+                    );
+
+                    if (hasOverlappingDay) {
+                        const existingStart = convertTimeToMinutes(existingSchedule.timeSlots.startTime);
+                        const existingEnd = convertTimeToMinutes(existingSchedule.timeSlots.endTime);
+                        const newStart = convertTimeToMinutes(newSchedule.timeSlots.startTime);
+                        const newEnd = convertTimeToMinutes(newSchedule.timeSlots.endTime);
+
+                        return (newStart < existingEnd && newEnd > existingStart);
+                    }
+                    return false;
+                });
+
+                const conflictDetails = conflictingClass ? conflictingClass.classId : null;
+                const conflictSchedule = conflictDetails ? conflictDetails.schedule : null;
+
+                let errorMessage = `Student with ID ${item.studentId} has a schedule conflict. `;
+                errorMessage += `Already enrolled in class "${conflictDetails?.name || 'Unknown'}" (${conflictDetails?.grade || 'N/A'}-${conflictDetails?.section || 'N/A'})`;
+
+                if (conflictSchedule && conflictSchedule.dayOfWeeks && conflictSchedule.timeSlots) {
+                    const overlappingDays = conflictSchedule.dayOfWeeks.filter(day =>
+                        classInfo.schedule.dayOfWeeks && classInfo.schedule.dayOfWeeks.includes(day)
+                    );
+
+                    errorMessage += ` which has overlapping schedule: `;
+                    errorMessage += `Days: ${getDayNames(overlappingDays)}, `;
+                    errorMessage += `Time: ${conflictSchedule.timeSlots.startTime}-${conflictSchedule.timeSlots.endTime}`;
+                } else {
+                    errorMessage += ` which has overlapping days and time slots with the new class.`;
+                }
+
+                throw new ApiError(httpStatus.CONFLICT, errorMessage);
+            }
         }
     }
 

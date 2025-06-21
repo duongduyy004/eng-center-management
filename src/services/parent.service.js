@@ -26,12 +26,22 @@ const queryParents = async (filter, options) => {
         filter.userId = { $in: userIds };
         delete filter.email;
     }
-    const parents = await Parent.paginate(filter, { ...options, populate: 'userId' });
+    const parents = await Parent.paginate(filter, {
+        ...options, populate: [
+            { path: 'userId' },
+            { path: 'studentIds', populate: { path: 'userId', select: 'name' }, select: 'userId' }
+        ]
+    });
     return parents;
 };
 
 const getParentById = async (id) => {
-    const parent = Parent.findById(id).populate('userId');
+    const parent = await Parent.findById(id)
+        .populate('userId')
+        .populate({
+            path: 'studentIds',
+            populate: { path: 'userId', select: 'name email phoneNumber' }
+        });
     if (!parent) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Parent not found');
     }

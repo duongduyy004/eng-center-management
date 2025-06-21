@@ -3,6 +3,7 @@ const { User } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { cloudinary } = require('../config/cloudinary');
 const logger = require('../config/logger');
+const { deleteImageFromCloudinary } = require('../utils/cloudinary');
 
 /**
  * Create a user
@@ -81,20 +82,7 @@ const uploadAvatar = async (userId, avatarUrl) => {
  * @returns {Promise<void>}
  */
 const deleteAvatar = async (avatarUrl) => {
-  try {
-    const publicId = extractPublicIdFromUrl(avatarUrl);
-    if (publicId) {
-      const result = await cloudinary.uploader.destroy(publicId);
-      if (result.result === 'ok') {
-        logger.info(`Successfully deleted avatar with public ID: ${publicId}`);
-      } else {
-        logger.warn(`Failed to delete avatar with public ID: ${publicId}, result: ${result.result}`);
-      }
-    }
-  } catch (error) {
-    logger.error('Error deleting avatar from Cloudinary:', error);
-    throw error;
-  }
+  await deleteImageFromCloudinary(avatarUrl)
 };
 
 /**
@@ -102,29 +90,7 @@ const deleteAvatar = async (avatarUrl) => {
  * @param {string} url
  * @returns {string}
  */
-const extractPublicIdFromUrl = (url) => {
-  try {
-    // Handle different Cloudinary URL formats
-    // Example: https://res.cloudinary.com/demo/image/upload/v1234567890/english-center/avatars/avatar-1234567890-abc123.jpg
-    const regex = /\/([^\/]+\/[^\/]+\/[^\/]+)\.(?:jpg|jpeg|png|gif|webp)$/i;
-    const match = url.match(regex);
 
-    if (match) {
-      return match[1]; // This includes the folder path
-    }
-
-    // Fallback: try to extract just the filename without extension
-    const filenameMatch = url.match(/\/([^\/]+)\.[^\/]+$/);
-    if (filenameMatch) {
-      return `english-center/avatars/${filenameMatch[1]}`;
-    }
-
-    return null;
-  } catch (error) {
-    logger.error('Error extracting public ID from URL:', error);
-    return null;
-  }
-};
 
 /**
  * Update user by id
@@ -142,16 +108,6 @@ const updateUserById = async (userId, updateBody) => {
   }
   if (updateBody.email) {
     updateBody = { ...updateBody, isEmailVerified: false }
-  }
-
-  // Handle avatar deletion if needed
-  if (updateBody.avatar === null && user.avatar && user.avatar.includes('cloudinary')) {
-    try {
-      await deleteAvatar(user.avatar);
-    } catch (error) {
-      logger.warn('Failed to delete avatar during user update:', error.message);
-    }
-    updateBody.avatar = undefined;
   }
 
   Object.assign(user, updateBody);

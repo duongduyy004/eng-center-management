@@ -80,7 +80,12 @@ const autoUpdateTeacherPayment = async (attendanceData) => {
  * @returns {Promise<QueryResult>}
  */
 const queryTeacherPayments = async (filter, options) => {
-    const teacherPayments = await TeacherPayment.paginate(filter, { ...options, populate: 'teacherId.userId,classId' })
+    const teacherPayments = await TeacherPayment.paginate(filter, {
+        ...options, populate: [
+            { path: 'classId' },
+            { path: 'teacherId.userId' }
+        ]
+    })
     return teacherPayments;
 };
 

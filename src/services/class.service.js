@@ -313,7 +313,7 @@ const getClassStudents = async (classId, options = {}) => {
         limit: options.limit || 10,
         page: options.page || 1,
         sortBy: options.sortBy || 'createdAt:desc', // Use default sort, will sort by lastname manually
-        populate: 'userId,parentId'
+        populate: ['userId', 'parentId']
     };
 
     // Get students using pagination

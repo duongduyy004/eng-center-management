@@ -39,12 +39,32 @@ const queryStudents = async (filter, options) => {
         filter.userId = { $in: userIds };
         delete filter.email;
     }
-    const users = await Student.paginate(filter, { ...options, populate: 'userId,parentId.userId' })
-    return users;
+    const students = await Student.paginate(filter, {
+        ...options, populate: [
+            { path: 'userId' },
+            { path: 'parentId', populate: { path: 'userId', select: 'name email' }, select: 'userId' },
+            { path: 'classes.classId', select: 'name grade section' }
+        ]
+    })
+    return students;
 };
 
 const getStudentById = async (studentId) => {
-    const student = await Student.findById(studentId).populate('userId')
+    const student = await Student.findById(studentId)
+        .populate('userId')
+        .populate('parentId', 'userId')
+        .populate({
+            path: 'classes.classId',
+            select: 'name grade section year room status schedule teacherId',
+            populate: {
+                path: 'teacherId',
+                select: 'userId',
+                populate: {
+                    path: 'userId',
+                    select: 'name email'
+                }
+            }
+        });
     if (!student) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Student not found')
     }

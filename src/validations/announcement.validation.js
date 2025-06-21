@@ -6,14 +6,9 @@ const createAnnouncement = {
         title: Joi.string().required().trim(),
         content: Joi.string().required(),
         description: Joi.string().trim(),
-        imageUrl: Joi.string().uri().trim(),
-        linkUrl: Joi.string().uri().trim(),
-        displayType: Joi.string().valid('popup', 'banner', 'notification', 'carousel').default('banner'),
-        priority: Joi.number().integer().min(0).max(5).default(0),
-        isActive: Joi.boolean().default(true),
-        startDate: Joi.date().default(Date.now),
-        endDate: Joi.date().greater(Joi.ref('startDate')),
-        tags: Joi.array().items(Joi.string().trim())
+        displayType: Joi.string().valid('popup', 'banner', 'notification').default('banner'),
+        priority: Joi.number().integer().min(0).default(0),
+        isActive: Joi.boolean().default(true)
     })
 };
 
@@ -51,38 +46,13 @@ const updateAnnouncement = {
         title: Joi.string().trim(),
         content: Joi.string(),
         description: Joi.string().trim(),
-        imageUrl: Joi.string().uri().trim(),
-        linkUrl: Joi.string().uri().trim(),
-        displayType: Joi.string().valid('popup', 'banner', 'notification', 'carousel'),
-        priority: Joi.number().integer().min(0).max(5),
+        displayType: Joi.string().valid('popup', 'banner', 'notification'),
+        priority: Joi.number().integer().min(0).default(0),
         isActive: Joi.boolean(),
-        startDate: Joi.date(),
-        endDate: Joi.date(),
-        tags: Joi.array().items(Joi.string().trim())
     })
 };
 
 const deleteAnnouncement = {
-    params: Joi.object().keys({
-        announcementId: Joi.string().custom(objectId)
-    })
-};
-
-const getActiveAnnouncements = {
-    query: Joi.object().keys({
-        displayType: Joi.string().valid('popup', 'banner', 'notification', 'carousel'),
-        tags: Joi.string().trim(),
-        limit: Joi.number().integer().min(1).max(50).default(10)
-    })
-};
-
-const incrementView = {
-    params: Joi.object().keys({
-        announcementId: Joi.string().custom(objectId)
-    })
-};
-
-const incrementClick = {
     params: Joi.object().keys({
         announcementId: Joi.string().custom(objectId)
     })
@@ -94,7 +64,4 @@ module.exports = {
     getAnnouncement,
     updateAnnouncement,
     deleteAnnouncement,
-    getActiveAnnouncements,
-    incrementView,
-    incrementClick
 };

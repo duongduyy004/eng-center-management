@@ -19,31 +19,20 @@ const announcementSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
-    linkUrl: {
-        type: String,
-        trim: true
-    },
     displayType: {
         type: String,
-        enum: ['popup', 'banner', 'notification', 'carousel'],
+        enum: ['popup', 'banner', 'notification'],
         default: 'banner'
     },
     priority: {
         type: Number,
         default: 0,
         min: 0,
-        max: 5
     },
+    createdBy: mongoose.Types.ObjectId,
     isActive: {
         type: Boolean,
         default: true
-    },
-    startDate: {
-        type: Date,
-        default: Date.now
-    },
-    endDate: {
-        type: Date
     }
 },
     {
@@ -52,9 +41,8 @@ const announcementSchema = new mongoose.Schema({
 )
 
 // Indexes for better performance
-announcementSchema.index({ isActive: 1, startDate: 1, endDate: 1 });
+announcementSchema.index({ isActive: 1 });
 announcementSchema.index({ priority: -1 });
-announcementSchema.index({ tags: 1 });
 
 announcementSchema.plugin(toJSON)
 announcementSchema.plugin(paginate);

@@ -5,7 +5,8 @@ const { announcementService } = require('../services');
 
 const createAnnouncement = catchAsync(async (req, res) => {
     const announcementBody = { ...req.body, createdBy: req.user.id };
-    const announcement = await announcementService.createAnnouncement(announcementBody);
+    const imageUrl = req.file.path
+    const announcement = await announcementService.createAnnouncement({ ...announcementBody, imageUrl });
     res.status(httpStatus.CREATED).json({
         message: 'Announcement created successfully',
         data: announcement
@@ -13,19 +14,11 @@ const createAnnouncement = catchAsync(async (req, res) => {
 });
 
 const getAnnouncements = catchAsync(async (req, res) => {
-    const filter = pick(req.query, ['title', 'displayType', 'isActive', 'priority', 'tags']);
+    const filter = pick(req.query, ['title', 'displayType', 'isActive', 'priority']);
     const options = pick(req.query, ['sortBy', 'limit', 'page']);
 
-    // Handle tags filter
-    if (filter.tags) {
-        filter.tags = { $in: filter.tags.split(',') };
-    }
-
     const result = await announcementService.queryAnnouncements(filter, options);
-    res.send({
-        message: 'Announcements retrieved successfully',
-        data: result
-    });
+    res.send(result)
 });
 
 const getAnnouncement = catchAsync(async (req, res) => {
@@ -37,7 +30,7 @@ const getAnnouncement = catchAsync(async (req, res) => {
 });
 
 const updateAnnouncement = catchAsync(async (req, res) => {
-    const announcement = await announcementService.updateAnnouncementById(req.params.announcementId, req.body);
+    const announcement = await announcementService.updateAnnouncementById(req.params.announcementId, req.body, req.file);
     res.send({
         message: 'Announcement updated successfully',
         data: announcement

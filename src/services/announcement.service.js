@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const { Announcement } = require('../models');
 const ApiError = require('../utils/ApiError');
+const { deleteImageFromCloudinary } = require('../utils/cloudinary');
 
 /**
  * Create an announcement
@@ -43,8 +44,12 @@ const getAnnouncementById = async (id) => {
  * @param {Object} updateBody
  * @returns {Promise<Announcement>}
  */
-const updateAnnouncementById = async (announcementId, updateBody) => {
+const updateAnnouncementById = async (announcementId, updateBody, file) => {
     const announcement = await getAnnouncementById(announcementId);
+    if (file && announcement.imageUrl) {
+        deleteImageFromCloudinary(announcement.imageUrl)
+        Object.assign(announcement, { ...updateBody, imageUrl: file.path });
+    }
     Object.assign(announcement, updateBody);
     await announcement.save();
     return announcement;
@@ -57,6 +62,7 @@ const updateAnnouncementById = async (announcementId, updateBody) => {
  */
 const deleteAnnouncementById = async (announcementId) => {
     const announcement = await getAnnouncementById(announcementId);
+    await deleteImageFromCloudinary(announcement.imageUrl)
     await announcement.delete();
     return announcement;
 };

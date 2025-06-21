@@ -1,5 +1,6 @@
-const { uploadCloudinary } = require('../config/cloudinary');
+const { uploadAvatarCloudinary, uploadBannerCloudinary } = require('../config/cloudinary');
 
-const uploadSingle = uploadCloudinary.single('image');
+const uploadSingle = uploadAvatarCloudinary.single('image');
+const uploadBanner = uploadBannerCloudinary.single('image')
 
-module.exports = { uploadSingle };
+module.exports = { uploadSingle, uploadBanner };

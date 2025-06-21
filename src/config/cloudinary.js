@@ -11,7 +11,7 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Configure Cloudinary storage
+// Configure Cloudinary storage for avatars
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
@@ -33,8 +33,25 @@ const storage = new CloudinaryStorage({
     },
 });
 
-const uploadCloudinary = multer({
+// Configure Cloudinary storage for banners
+const bannerStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'english-center/banners',
+        allowedFormats: ['jpg', 'png', 'jpeg', 'webp'],
+        public_id: (req, file) => {
+            const timestamp = Date.now();
+            const randomString = Math.random().toString(36).substring(2, 15);
+            return `banner-${timestamp}-${randomString}`;
+        }
+    },
+});
+
+const uploadAvatarCloudinary = multer({
     storage: storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit for avatars
+    },
     fileFilter: (req, file, cb) => {
         if (file.mimetype.startsWith('image/')) {
             cb(null, true);
@@ -44,7 +61,24 @@ const uploadCloudinary = multer({
     }
 });
 
+const uploadBannerCloudinary = multer({
+    storage: bannerStorage,
+    limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB limit for banners
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new ApiError(httpStatus.BAD_REQUEST, 'Only JPEG, PNG, and WebP image files are allowed for banners'), false);
+        }
+    }
+});
+
+
 module.exports = {
     cloudinary,
-    uploadCloudinary
+    uploadBannerCloudinary,
+    uploadAvatarCloudinary,
 };

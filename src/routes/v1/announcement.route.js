@@ -10,7 +10,7 @@ const router = express.Router();
 router
     .route('/')
     .post(auth('manageAnnouncements'), uploadBanner, validate(announcementValidation.createAnnouncement), announcementController.createAnnouncement)
-    .get(auth(), announcementController.getAnnouncements);
+    .get(announcementController.getAnnouncements);
 
 router
     .route('/:announcementId')

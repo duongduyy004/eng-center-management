@@ -359,7 +359,7 @@ const autoUpdatePaymentRecords = async (attendance) => {
             }
         }
     } catch (error) {
-        console.error('Error updating payment records:', error);
+        logger.error('Error updating payment records:', error);
     }
 };
 
@@ -375,7 +375,7 @@ const autoUpdateTeacherPaymentRecords = async (attendance) => {
             date: attendance.date
         });
     } catch (error) {
-        console.error('Error updating teacher payment records:', error);
+        logger.error('Error updating teacher payment records:', error);
     }
 };
 

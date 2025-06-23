@@ -1,6 +1,7 @@
 const httpStatus = require("http-status");
 const { Class, Student, Teacher } = require("../models");
 const ApiError = require("../utils/ApiError");
+const logger = require("../config/logger");
 
 /**
  * Convert time string (HH:mm) to minutes since midnight
@@ -16,7 +17,7 @@ const convertTimeToMinutes = (timeString) => {
         const minutes = parseInt(parts[1], 10);
         return hours * 60 + minutes;
     } catch (error) {
-        console.warn(`Invalid time format: ${timeString}`);
+        logger.warn(`Invalid time format: ${timeString}`);
         return 0;
     }
 };
@@ -116,9 +117,9 @@ const enrollStudentToClass = async (classId, studentData) => {
 
     // Validate class schedule data for conflict checking
     if (!classInfo.schedule || !classInfo.schedule.dayOfWeeks || !classInfo.schedule.timeSlots) {
-        console.warn(`Class ${classId} has incomplete schedule data, skipping schedule conflict validation`);
+        logger.warn(`Class ${classId} has incomplete schedule data, skipping schedule conflict validation`);
     } else {
-        console.log(`Target class schedule: Days ${getDayNames(classInfo.schedule.dayOfWeeks)}, Time ${classInfo.schedule.timeSlots.startTime}-${classInfo.schedule.timeSlots.endTime}`);
+        logger.log(`Target class schedule: Days ${getDayNames(classInfo.schedule.dayOfWeeks)}, Time ${classInfo.schedule.timeSlots.startTime}-${classInfo.schedule.timeSlots.endTime}`);
     }
 
     // Get current number of enrolled students
@@ -274,7 +275,7 @@ const enrollStudentToClass = async (classId, studentData) => {
             });
 
         } catch (error) {
-            console.error(`Error enrolling student ${item.studentId}:`, error);
+            logger.error(`Error enrolling student ${item.studentId}:`, error);
             // If any enrollment fails after validation, throw error immediately
             throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `Failed to enroll student ${item.studentId}: ${error.message}`);
         }

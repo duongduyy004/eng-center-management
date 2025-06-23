@@ -4,7 +4,8 @@ const userService = require('./user.service');
 const Token = require('../models/token.model');
 const ApiError = require('../utils/ApiError');
 const { tokenTypes } = require('../config/tokens');
-const { User } = require('../models');
+const { User, OTP } = require('../models');
+const otpService = require('./otp.service');
 
 /**
  * Login with username and password
@@ -54,19 +55,21 @@ const refreshAuth = async (refreshToken) => {
 
 /**
  * Reset password
- * @param {string} resetPasswordToken
+ * @param {string} email
  * @param {string} newPassword
+ * @param {string} resetPasswordOTP
  * @returns {Promise}
  */
-const resetPassword = async (resetPasswordToken, newPassword) => {
+const resetPassword = async (email, newPassword, resetPasswordOTP) => {
   try {
-    const resetPasswordTokenDoc = await tokenService.verifyToken(resetPasswordToken, tokenTypes.RESET_PASSWORD);
-    const user = await userService.getUserById(resetPasswordTokenDoc.user);
+    await otpService.verifyOTP(email, resetPasswordOTP);
+    const user = await userService.getUserByEmail(email);
     if (!user) {
       throw new Error();
     }
-    await userService.updateUserById(user.id, { password: newPassword });
-    await Token.deleteMany({ user: user.id, type: tokenTypes.RESET_PASSWORD });
+    const result = await userService.updateUserById(user.id, { password: newPassword });
+    await OTP.deleteMany({ email, resetPasswordOTP });
+
   } catch (error) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Password reset failed');
   }

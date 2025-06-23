@@ -15,8 +15,16 @@ A comprehensive Node.js RESTful API for managing English language centers. This 
 - **Teacher Payment Management**: Salary calculations based on lessons taught
 - **Announcements**: System-wide communication management
 
+### Security & Authentication
+- **Email Verification**: Secure email verification for new account registration
+- **Password Reset**: Forgot password functionality with OTP (One-Time Password) via email
+- **JWT Authentication**: Secure token-based authentication system
+- **Role-based Access Control**: Different permission levels for admin, teacher, student, and parent roles
+
 ### Advanced Features
 - **File Upload**: Avatar and image management with Cloudinary integration
+- **Email Service**: Automated email notifications for verification, password reset, and system updates
+- **OTP System**: Secure One-Time Password generation and verification for password reset
 - **Statistics & Analytics**: Monthly enrollment changes, attendance reports, payment insights
 - **Flexible Date Parsing**: Support for multiple date formats (DD/MM/YYYY, etc.)
 - **Schedule Management**: Student and teacher schedule viewing
@@ -60,6 +68,7 @@ src/
 - Node.js (>= 12.0.0)
 - MongoDB
 - Cloudinary account (for file uploads)
+- SMTP Email Service (Gmail recommended for email verification and password reset)
 
 ### Installation
 
@@ -87,9 +96,35 @@ src/
 The system automatically creates a default admin account on first run:
 - **Email**: admin@gmail.com (configurable)
 - **Password**: admin123 (configurable)
-- **Role**: admin
+
+### Authentication Features
+
+#### Email Verification
+- **New User Registration**: All new users must verify their email address
+- **Verification Process**: 
+  1. User registers with email and password
+  2. System sends verification email with secure token
+  3. User clicks verification link to activate account
+  4. Account becomes active and user can log in
+
+#### Forgot Password with OTP
+- **Secure Password Reset**: Uses One-Time Password (OTP) for enhanced security
+- **Reset Process**:
+  1. User requests password reset with email address
+  2. System validates email exists in database
+  3. 6-digit OTP generated and sent to user's email
+  4. OTP expires after 10 minutes for security
+  5. User enters OTP and new password to complete reset
+  6. Old OTPs are automatically invalidated
 
 ## 📊 Business Logic
+
+### Security & Data Protection
+- **Email Verification**: Mandatory email verification for all new accounts
+- **OTP Security**: Time-limited One-Time Passwords with automatic cleanup
+- **Password Encryption**: Secure bcrypt hashing for all user passwords
+- **JWT Tokens**: Stateless authentication with configurable expiration
+- **Role-based Permissions**: Granular access control based on user roles
 
 ### Automatic Calculations
 - **Student Payments**: Automatically calculated based on attended lessons and discount percentage

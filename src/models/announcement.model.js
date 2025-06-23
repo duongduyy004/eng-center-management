@@ -46,7 +46,6 @@ announcementSchema.index({ priority: -1 });
 
 announcementSchema.plugin(toJSON)
 announcementSchema.plugin(paginate);
-announcementSchema.plugin(softDelete, { overrideMethods: true })
 
 const Announcement = mongoose.model('Announcement', announcementSchema)
 

@@ -4,7 +4,7 @@ const userService = require('./user.service');
 const Token = require('../models/token.model');
 const ApiError = require('../utils/ApiError');
 const { tokenTypes } = require('../config/tokens');
-const { User, OTP } = require('../models');
+const { User, OTP, Student, Teacher, Parent } = require('../models')
 const otpService = require('./otp.service');
 
 /**
@@ -20,6 +20,24 @@ const loginUserWithEmailAndPassword = async (email, password) => {
   }
   return user;
 };
+
+const handleRoleId = async (user) => {
+  const userObj = user.toJSON()
+  if (user.role === 'student') {
+    const student = await Student.findOne({ userId: user.id })
+    Object.assign(userObj, { studentId: student.id })
+  }
+  if (user.role === 'teacher') {
+    const teacher = await Teacher.findOne({ userId: user.id })
+    Object.assign(userObj, { teacherId: teacher.id })
+  }
+  if (user.role === 'parent') {
+    const parent = await Parent.findOne({ userId: user.id })
+    Object.assign(userObj, { parentId: parent.id })
+  }
+
+  return userObj
+}
 
 /**
  * Logout
@@ -109,4 +127,5 @@ module.exports = {
   resetPassword,
   changePassword,
   verifyEmail,
+  handleRoleId
 };

@@ -17,9 +17,9 @@ router.route('/:studentId')
     .delete(auth('manageStudents'), validate(studentValidation.deleteStudent), studentController.deleteStudent)
 
 // Get student schedule
-router.get('/:studentId/schedule', auth('getStudents'), validate(studentValidation.getSchedule), studentController.getStudentSchedule);
+router.get('/:studentId/schedule', validate(studentValidation.getSchedule), studentController.getStudentSchedule);
 
 // Get student attendance information
-router.get('/:studentId/attendance', auth('getStudents'), validate(studentValidation.getStudentAttendance), studentController.getStudentAttendance);
+router.get('/:studentId/attendance', validate(studentValidation.getStudentAttendance), studentController.getStudentAttendance);
 
 module.exports = router

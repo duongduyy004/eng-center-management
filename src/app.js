@@ -59,18 +59,24 @@ app.use('/api/v1', routes);
 
 // Health check endpoints
 app.get('/', (req, res) => {
+  const now = new Date();
+  const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getFullYear()}`;
+
   res.json({
     message: 'English Center Management API',
     status: 'running',
-    timestamp: new Date().toISOString(),
+    timestamp: timestamp,
     version: '1.0.0'
   });
 });
 
 app.get('/health', (req, res) => {
+  const now = new Date();
+  const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getFullYear()}`;
+
   res.json({
     status: 'healthy',
-    timestamp: new Date().toISOString(),
+    timestamp: timestamp,
     uptime: process.uptime(),
     environment: config.env,
     cloudinary: {

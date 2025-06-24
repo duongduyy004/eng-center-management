@@ -48,6 +48,7 @@ const updateParent = {
         userData: Joi.object().keys({
             name: Joi.string().trim(),
             email: Joi.string().email(),
+            dayOfBirth: Joi.string(),
             phone: Joi.string().trim(),
             address: Joi.string(),
             gender: Joi.string()

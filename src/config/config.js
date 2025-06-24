@@ -66,6 +66,7 @@ module.exports = {
       },
     },
     from: envVars.EMAIL_FROM,
+    displayName: envVars.DISPLAY_NAME
   },
   // Default admin configuration
   defaultAdmin: {

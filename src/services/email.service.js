@@ -21,7 +21,7 @@ if (config.env !== 'test') {
  */
 const sendEmail = async (to, subject, html = null) => {
   const msg = {
-    from: config.email.from,
+    from: `${config.email.displayName} <${config.email.from}>`,
     to,
     subject,
     ...(html && { html }) // Add HTML if provided

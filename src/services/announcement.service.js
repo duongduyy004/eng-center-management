@@ -63,7 +63,7 @@ const updateAnnouncementById = async (announcementId, updateBody, file) => {
 const deleteAnnouncementById = async (announcementId) => {
     const announcement = await getAnnouncementById(announcementId);
     await deleteImageFromCloudinary(announcement.imageUrl)
-    await announcement.delete();
+    await announcement.deleteOne();
     return announcement;
 };
 

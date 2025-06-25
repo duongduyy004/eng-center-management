@@ -17,4 +17,5 @@ router
     .patch(auth('manageTeachers'), validate(teacherValidation.updateTeacher), teacherController.updateTeacher)
     .delete(auth('manageTeachers'), validate(teacherValidation.deleteTeacher), teacherController.deleteTeacher);
 
+router.get('/:teacherId/schedule', validate(teacherValidation.getTeacherSchedule), teacherController.getTeacherSchedule)
 module.exports = router;

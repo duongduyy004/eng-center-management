@@ -113,7 +113,7 @@ const getAvailableTeachers = async () => {
  * @param {ObjectId} teacherId
  * @returns {Promise<Object>}
  */
-const getTeacherClasses = async (teacherId) => {
+const getTeacherSchedule = async (teacherId) => {
     const teacher = await Teacher.findById(teacherId)
         .populate('userId', 'name email phone')
         .populate({
@@ -162,5 +162,5 @@ module.exports = {
     updateTeacherById,
     deleteTeacherById,
     getAvailableTeachers,
-    getTeacherClasses
+    getTeacherSchedule
 }

@@ -69,7 +69,7 @@ const deleteTeacher = {
     })
 };
 
-const getTeacherClasses = {
+const getTeacherSchedule = {
     params: Joi.object().keys({
         teacherId: Joi.string().custom(objectId)
     })
@@ -81,5 +81,5 @@ module.exports = {
     getTeacher,
     updateTeacher,
     deleteTeacher,
-    getTeacherClasses
+    getTeacherSchedule
 };

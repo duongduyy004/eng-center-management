@@ -50,7 +50,7 @@ const bannerStorage = new CloudinaryStorage({
 const uploadAvatarCloudinary = multer({
     storage: storage,
     limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB limit for avatars
+        fileSize: 10 * 1024 * 1024, // 5MB limit for avatars
     },
     fileFilter: (req, file, cb) => {
         if (file.mimetype.startsWith('image/')) {

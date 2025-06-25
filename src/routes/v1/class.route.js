@@ -11,7 +11,7 @@ router
   .post(auth('manageClasses'), validate(classValidation.createClass), classController.createClass)
 
 router.route('/:classId')
-  .get(auth('getClasses'), validate(classValidation.getClass), classController.getClass)
+  .get(validate(classValidation.getClass), classController.getClass)
   .patch(auth('manageClasses'), validate(classValidation.updateClass), classController.updateClass)
 
 router.route('/:classId/students')

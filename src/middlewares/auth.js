@@ -33,7 +33,7 @@ const getUserId = async (params) => {
   }
   else if (params.teacherPaymentId) {
     const teacher = await TeacherPayment.findById(params.teacherPaymentId).populate('teacherId')
-    return (await Teacher.findById(teacher.teacherId))?.userId
+    return teacher.teacherId.userId
   }
 }
 

@@ -12,7 +12,7 @@ router.route('/')
 router.get('/monthly-changes', auth('getStudents'), validate(studentValidation.getMonthlyChanges), studentController.getMonthlyStudentChanges);
 
 router.route('/:studentId')
-    .get(auth('manageStudents'), validate(studentValidation.getStudent), studentController.getStudent)
+    .get(auth('getStudents'), validate(studentValidation.getStudent), studentController.getStudent)
     .patch(auth('manageStudents'), validate(studentValidation.updateStudent), studentController.updateStudent)
     .delete(auth('manageStudents'), validate(studentValidation.deleteStudent), studentController.deleteStudent)
 

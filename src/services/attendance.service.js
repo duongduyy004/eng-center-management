@@ -1,7 +1,8 @@
 const httpStatus = require('http-status');
-const { Attendance, Student, Class, Teacher } = require('../models');
+const { Attendance, Student, Class } = require('../models');
 const ApiError = require('../utils/ApiError');
 const logger = require('../config/logger');
+const teacherPaymentService = require('./teacherPayment.service');
 
 /**
  * Transform attendance data to match required format
@@ -369,7 +370,6 @@ const autoUpdatePaymentRecords = async (attendance) => {
  */
 const autoUpdateTeacherPaymentRecords = async (attendance) => {
     try {
-        const teacherPaymentService = require('./teacherPayment.service');
         await teacherPaymentService.autoUpdateTeacherPayment({
             classId: attendance.classId,
             date: attendance.date

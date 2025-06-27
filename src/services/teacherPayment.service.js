@@ -40,7 +40,7 @@ const autoUpdateTeacherPayment = async (attendanceData) => {
             }
         });
 
-        const completedLessons = attendanceRecords.filter(att => att.status === 'completed').length;
+        const completedLessons = attendanceRecords.length;
         const salaryPerLesson = teacher.salaryPerLesson || 0;
 
         if (teacherPayment) {

@@ -20,8 +20,7 @@ const getStudents = catchAsync(async (req, res) => {
 })
 
 const getStudent = catchAsync(async (req, res) => {
-    const { populate } = req.query
-    const student = await getStudentById(req.params.studentId, populate)
+    const student = await getStudentById(req.params.studentId)
     res.send(student)
 })
 

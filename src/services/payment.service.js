@@ -13,7 +13,12 @@ const logger = require('../config/logger');
  * @returns {Promise<QueryResult>}
  */
 const queryPayments = async (filter, options) => {
-    const payments = await Payment.paginate(filter, options);
+    const payments = await Payment.paginate(filter, {
+        ...options, populate: [
+            { path: 'studentId', populate: { path: 'userId', select: 'name' }, select: 'userId' },
+            { path: 'classId', select: 'name year' }
+        ]
+    });
     return payments;
 };
 

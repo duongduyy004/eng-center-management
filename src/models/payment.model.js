@@ -54,6 +54,7 @@ const paymentSchema = new mongoose.Schema({
     },
     note: String,
     paymentHistory: [{
+        _id: false,
         amount: Number,
         date: {
             type: Date,

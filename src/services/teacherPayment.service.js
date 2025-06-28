@@ -101,7 +101,7 @@ const getTeacherPaymentById = async (teacherId) => {
             { path: 'classId', select: 'name level schedule' }
         ]);
 
-    if (!teacherPayment) {
+    if (teacherPayment.length === 0) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Teacher payment not found');
     }
     return teacherPayment;

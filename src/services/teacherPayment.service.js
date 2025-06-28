@@ -94,7 +94,7 @@ const queryTeacherPayments = async (filter, options) => {
  * @param {ObjectId} id
  * @returns {Promise<TeacherPayment>}
  */
-const getTeacherPaymentById = async (teacherId) => {
+const getTeacherPaymentByTeacherId = async (teacherId) => {
     const teacherPayment = await TeacherPayment.find({ teacherId })
         .populate([
             { path: 'teacherId', populate: { path: 'userId', select: 'name email phone' } },
@@ -128,45 +128,65 @@ const getTeacherPaymentStatistics = async (filter = {}) => {
 };
 
 /**
- * Record teacher payment
- * @param {ObjectId} teacherPaymentId
+ * Record teacher payment - Bulk update version
+ * @param {ObjectId} teacherId
  * @param {Object} paymentData
- * @returns {Promise<TeacherPayment>}
+ * @returns {Promise<TeacherPayment[]>}
  */
-const recordTeacherPayment = async (teacherPaymentId, paymentData) => {
-    const teacherPayment = await getTeacherPaymentById(teacherPaymentId);
+const recordTeacherPayment = async (teacherId, paymentData) => {
+    const teacherPayments = await getTeacherPaymentByTeacherId(teacherId);
 
-    if (teacherPayment.status === 'paid') {
-        throw new ApiError(httpStatus.BAD_REQUEST, 'Payment was fully paid')
+    let total = 0;
+    const paymentIds = [];
+
+    // Check status and collect IDs
+    teacherPayments.forEach(item => {
+        if (item.status === 'paid') {
+            throw new ApiError(httpStatus.BAD_REQUEST, 'Payment was fully paid');
+        }
+        total += item.totalAmount;
+        paymentIds.push(item._id);
+    });
+
+    // Validate payment amount
+    if (paymentData.amount !== total) {
+        throw new ApiError(httpStatus.BAD_REQUEST, `Amount must be equal to total amount: ${total}`);
     }
 
-    if (paymentData.amount < teacherPayment.totalAmount) {
-        throw new ApiError(httpStatus.BAD_REQUEST, 'Amount must be equal total amount')
-    }
+    // Bulk update all payments
+    const updateResult = await TeacherPayment.updateMany(
+        { _id: { $in: paymentIds } },
+        {
+            $set: {
+                status: 'paid'
+            }
+        }
+    );
 
-    if (paymentData.amount > teacherPayment.totalAmount) {
-        throw new ApiError(httpStatus.BAD_REQUEST, 'Exceeded total amount')
-    }
+    const teacher = await Teacher.findByIdAndUpdate(teacherId, {
+        paymentHistory: {
+            amount: paymentData.amount,
+            method: paymentData.method || 'cash',
+            note: paymentData.note | '',
+            date: new Date()
+        },
+    }, { populate: { path: 'userId', select: 'name' }, select: 'userId' })
 
-    teacherPayment.status = 'paid';
-    teacherPayment.paymentDate = new Date();
-    teacherPayment.paymentHistory = {
-        amount: paymentData.amount || teacherPayment.totalAmount,
-        date: new Date(),
-        method: paymentData.method || 'cash',
-        note: paymentData.note || ''
+    // Get updated payments
+    const updatedPayments = await TeacherPayment.find({ _id: { $in: paymentIds } })
+        .populate({ path: 'classId', select: 'name' });
+
+    logger.info(`Teacher payment of ${teacherId} recorded as paid. Updated ${updateResult.modifiedCount} records`);
+    return {
+        teacher,
+        payment: updatedPayments
     };
-
-
-    await teacherPayment.save();
-    logger.info(`Teacher payment ${teacherPaymentId} recorded as paid`);
-    return teacherPayment;
 };
 
 module.exports = {
     autoUpdateTeacherPayment,
     queryTeacherPayments,
-    getTeacherPaymentById,
+    getTeacherPaymentByTeacherId,
     getTeacherPaymentStatistics,
     recordTeacherPayment,
 };

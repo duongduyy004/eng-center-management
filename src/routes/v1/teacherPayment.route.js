@@ -14,7 +14,7 @@ router
     .get(auth('getTeacherPayments'), validate(teacherPaymentValidation.getTeacherPayment), teacherPaymentController.getTeacherPayment)
 
 router
-    .route('/:teacherPaymentId/pay')
+    .route('/:teacherId/pay')
     .post(auth('manageTeacherPayments'), validate(teacherPaymentValidation.recordTeacherPayment), teacherPaymentController.recordTeacherPayment);
 
 

@@ -22,7 +22,7 @@ const getTeacherPayment = {
 
 const recordTeacherPayment = {
     params: Joi.object().keys({
-        teacherPaymentId: Joi.string().custom(objectId),
+        teacherId: Joi.string().custom(objectId),
     }),
     body: Joi.object().keys({
         amount: Joi.number().min(0),

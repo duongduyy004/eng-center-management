@@ -23,24 +23,10 @@ const teacherPaymentSchema = new mongoose.Schema({
         required: true
     },
     totalAmount: Number,
-    paidAmount: {
-        type: Number,
-        default: 0
-    },
-    paymentDate: Date,
     status: {
         type: String,
         enum: ['pending', 'paid'],
         default: 'pending'
-    },
-    paymentHistory: {
-        amount: Number,
-        date: Date,
-        method: {
-            type: String,
-            enum: ['cash', 'bank_transfer'],
-        },
-        note: String,
     }
 },
     {
@@ -51,17 +37,9 @@ const teacherPaymentSchema = new mongoose.Schema({
 // Pre-save middleware to calculate amounts
 teacherPaymentSchema.pre('save', function (next) {
     this.totalAmount = this.totalLessons * this.salaryPerLesson;
-    this.paidAmount = this.paymentHistory.amount
-
-    // Update status based on payment
-    if (this.paidAmount === 0) {
-        this.status = 'pending';
-    } else {
-        this.status = 'paid';
-    }
-
     next();
 });
+
 
 teacherPaymentSchema.plugin(toJSON)
 teacherPaymentSchema.plugin(paginate);

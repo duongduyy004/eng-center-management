@@ -10,7 +10,7 @@ router
     .route('/')
     .get(auth('getTeacherPayments'), validate(teacherPaymentValidation.getTeacherPayments), teacherPaymentController.getTeacherPayments);
 router
-    .route('/:teacherPaymentId')
+    .route('/:teacherId')
     .get(auth('getTeacherPayments'), validate(teacherPaymentValidation.getTeacherPayment), teacherPaymentController.getTeacherPayment)
 
 router

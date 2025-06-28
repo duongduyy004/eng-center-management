@@ -13,7 +13,7 @@ const getTeacherPayments = catchAsync(async (req, res) => {
 });
 
 const getTeacherPayment = catchAsync(async (req, res) => {
-    const teacherPayment = await teacherPaymentService.getTeacherPaymentById(req.params.teacherPaymentId);
+    const teacherPayment = await teacherPaymentService.getTeacherPaymentById(req.params.teacherId);
     res.send(teacherPayment);
 });
 

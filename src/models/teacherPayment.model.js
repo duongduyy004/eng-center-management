@@ -51,6 +51,7 @@ const teacherPaymentSchema = new mongoose.Schema({
 // Pre-save middleware to calculate amounts
 teacherPaymentSchema.pre('save', function (next) {
     this.totalAmount = this.totalLessons * this.salaryPerLesson;
+    this.paidAmount = this.paymentHistory.amount
 
     // Update status based on payment
     if (this.paidAmount === 0) {

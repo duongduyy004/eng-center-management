@@ -94,8 +94,8 @@ const queryTeacherPayments = async (filter, options) => {
  * @param {ObjectId} id
  * @returns {Promise<TeacherPayment>}
  */
-const getTeacherPaymentById = async (id) => {
-    const teacherPayment = await TeacherPayment.findById(id)
+const getTeacherPaymentById = async (teacherId) => {
+    const teacherPayment = await TeacherPayment.findOne({ teacherId })
         .populate([
             { path: 'teacherId', populate: { path: 'userId', select: 'name email phone' } },
             { path: 'classId', select: 'name level schedule' }
@@ -136,6 +136,18 @@ const getTeacherPaymentStatistics = async (filter = {}) => {
 const recordTeacherPayment = async (teacherPaymentId, paymentData) => {
     const teacherPayment = await getTeacherPaymentById(teacherPaymentId);
 
+    if (teacherPayment.status === 'paid') {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Payment was fully paid')
+    }
+
+    if (paymentData.amount < teacherPayment.totalAmount) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Amount must be equal total amount')
+    }
+
+    if (paymentData.amount > teacherPayment.totalAmount) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Exceeded total amount')
+    }
+
     teacherPayment.status = 'paid';
     teacherPayment.paymentDate = new Date();
     teacherPayment.paymentHistory = {
@@ -145,9 +157,6 @@ const recordTeacherPayment = async (teacherPaymentId, paymentData) => {
         note: paymentData.note || ''
     };
 
-    if (paymentData.notes) {
-        teacherPayment.notes = paymentData.notes;
-    }
 
     await teacherPayment.save();
     logger.info(`Teacher payment ${teacherPaymentId} recorded as paid`);

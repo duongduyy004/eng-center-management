@@ -16,7 +16,7 @@ const getTeacherPayments = {
 
 const getTeacherPayment = {
     params: Joi.object().keys({
-        teacherPaymentId: Joi.string().custom(objectId),
+        teacherId: Joi.string().custom(objectId),
     }),
 };
 

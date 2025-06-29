@@ -3,7 +3,14 @@ const { softDelete, toJSON, paginate } = require('./plugins')
 
 const teacherPaymentSchema = new mongoose.Schema({
     teacherId: { type: mongoose.Types.ObjectId, ref: 'Teacher', required: true },
-    classId: { type: mongoose.Types.ObjectId, ref: 'Class', required: true },
+    classes: [{
+        _id: false,
+        classId: { type: mongoose.Types.ObjectId, ref: 'Class', required: true },
+        totalLessons: {
+            type: Number,
+            required: true
+        },
+    }],
     month: {
         type: Number,
         required: true,
@@ -14,19 +21,27 @@ const teacherPaymentSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    totalLessons: {
-        type: Number,
-        required: true
-    },
     salaryPerLesson: {
         type: Number,
         required: true
     },
+    paidAmount: {
+        type: Number,
+        default: 0
+    },
     totalAmount: Number,
     status: {
         type: String,
-        enum: ['pending', 'paid'],
+        enum: ['pending', 'partial', 'paid'],
         default: 'pending'
+    },
+    paymentHistory: {
+        amount: Number,
+        method: {
+            type: String,
+            enum: ['cash', 'bank_transfer']
+        },
+        note: String
     }
 },
     {
@@ -36,7 +51,17 @@ const teacherPaymentSchema = new mongoose.Schema({
 
 // Pre-save middleware to calculate amounts
 teacherPaymentSchema.pre('save', function (next) {
-    this.totalAmount = this.totalLessons * this.salaryPerLesson;
+    this.totalAmount = 0;
+    this.classes.forEach(item => {
+        this.totalAmount += this.salaryPerLesson * item.totalLessons
+    })
+    if (this.paidAmount === 0) {
+        this.status = 'pending'
+    } else if (this.paidAmount < this.totalAmount) {
+        this.status = 'partial'
+    } else {
+        this.status = 'paid'
+    }
     next();
 });
 

@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const { Payment, Student } = require('../models');
+const { Payment, Student, Class, Attendance } = require('../models');
 const ApiError = require('../utils/ApiError');
 const logger = require('../config/logger');
 
@@ -100,9 +100,106 @@ const sendPaymentReminder = async (paymentId) => {
     };
 };
 
+/**
+ * Auto update/create payment records when attendance is updated
+ * @param {Object} attendance - Attendance document (should be converted to plain object)
+ */
+const autoUpdatePaymentRecords = async (attendance) => {
+    try {
+
+        // Convert Mongoose document to plain object to avoid internal properties
+        const attendanceData = attendance.toObject ? attendance.toObject() : attendance;
+
+        const attendanceDate = new Date(attendanceData.date);
+        const month = attendanceDate.getMonth() + 1;
+        const year = attendanceDate.getFullYear();
+
+        // Get class info with fee details
+        const classInfo = await Class.findById(attendanceData.classId);
+        if (!classInfo || !classInfo.feePerLesson) {
+            logger.warn('Class fee information not found, skipping payment update');
+            return;
+        }
+
+        // Process each student in the attendance
+        for (const studentAttendance of attendanceData.students) {
+            const studentId = studentAttendance.studentId;
+
+            // Get student's enrollment info for this class
+            const student = await Student.findById(studentId);
+            if (!student) continue;
+
+            const classEnrollment = student.classes.find(
+                c => c.classId.toString() === attendanceData.classId.toString() && c.status === 'active'
+            );
+
+            if (!classEnrollment) continue;
+
+            // Check if payment record exists for this month/year
+            let paymentRecord = await Payment.findOne({
+                studentId: studentId,
+                classId: attendanceData.classId,
+                month: month,
+                year: year
+            });
+
+            // Count total attendance sessions for this month
+            const monthlyAttendance = await Attendance.find({
+                classId: attendanceData.classId,
+                date: {
+                    $gte: new Date(year, month - 1, 1),
+                    $lt: new Date(year, month, 1)
+                }
+            });
+            // Count attended sessions for this student
+            let attendedLessons = 0;
+            monthlyAttendance.forEach(att => {
+                const studentRecord = att.students.find(s => s.studentId.toString() === studentId.toString());
+                if (studentRecord && (studentRecord.status === 'present' || studentRecord.status === 'late')) {
+                    attendedLessons++;
+                }
+            });
+
+            const discountPercent = classEnrollment.discountPercent || 0;
+            const feePerLesson = classInfo.feePerLesson;
+            const totalLessons = monthlyAttendance.length;
+
+            if (paymentRecord) {
+                // Update existing payment record
+                paymentRecord.totalLessons = totalLessons;
+                paymentRecord.attendedLessons = attendedLessons;
+                paymentRecord.feePerLesson = feePerLesson;
+                paymentRecord.discountPercent = discountPercent;
+
+                await paymentRecord.save();
+                logger.info(`Updated payment record for student ${studentId}, month ${month}/${year}`);
+            } else {
+                // Create new payment record
+                const newPayment = new Payment({
+                    studentId: studentId,
+                    classId: attendanceData.classId,
+                    month: month,
+                    year: year,
+                    totalLessons: totalLessons,
+                    attendedLessons: attendedLessons,
+                    feePerLesson: feePerLesson,
+                    discountPercent: discountPercent,
+                    status: 'pending',
+                });
+
+                await newPayment.save();
+                logger.info(`Created payment record for student ${studentId}, month ${month}/${year}`);
+            }
+        }
+    } catch (error) {
+        logger.error('Error updating payment records:', error);
+    }
+};
+
 module.exports = {
     queryPayments,
     getPaymentById,
     recordPayment,
-    sendPaymentReminder
+    sendPaymentReminder,
+    autoUpdatePaymentRecords
 };

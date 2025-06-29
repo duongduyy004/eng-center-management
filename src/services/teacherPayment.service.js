@@ -26,7 +26,6 @@ const autoUpdateTeacherPayment = async (attendanceData) => {
         // Check if teacher payment record exists for this month/year/class
         let teacherPayment = await TeacherPayment.findOne({
             teacherId,
-            classId,
             month,
             year
         });
@@ -45,20 +44,35 @@ const autoUpdateTeacherPayment = async (attendanceData) => {
 
         if (teacherPayment) {
             // Update existing payment record
-            teacherPayment.totalLessons = completedLessons;
             teacherPayment.salaryPerLesson = salaryPerLesson;
+            let classFound = false
+            for (const item of teacherPayment.classes) {
+                if (item.classId.toString() === classId.toString()) {
+                    item.totalLessons = completedLessons
+                    classFound = true;
+                    break;
+                }
+            }
+            if (!classFound) {
+                teacherPayment.classes.push({
+                    classId,
+                    totalLessons: completedLessons
+                })
+            }
             await teacherPayment.save();
             logger.info(`Updated teacher payment for teacher ${teacherId}, class ${classId}, month ${month}/${year}`);
         } else {
             // Create new payment record
             const newPayment = new TeacherPayment({
                 teacherId,
-                classId,
                 month,
                 year,
-                totalLessons: completedLessons,
                 salaryPerLesson
             });
+            newPayment.classes.push({
+                classId,
+                totalLessons: completedLessons
+            })
             await newPayment.save();
             logger.info(`Created teacher payment for teacher ${teacherId}, class ${classId}, month ${month}/${year}`);
         }
@@ -95,10 +109,10 @@ const queryTeacherPayments = async (filter, options) => {
  * @returns {Promise<TeacherPayment>}
  */
 const getTeacherPaymentByTeacherId = async (teacherId) => {
-    const teacherPayment = await TeacherPayment.find({ teacherId })
+    const teacherPayment = await TeacherPayment.findOne({ teacherId })
         .populate([
-            { path: 'teacherId', populate: { path: 'userId', select: 'name email phone' } },
-            { path: 'classId', select: 'name level schedule' }
+            { path: 'teacherId', populate: { path: 'userId', select: 'name email phone' }, select: 'teacherId' },
+            { path: 'classes', populate: { path: 'classId', select: 'name year' } }
         ]);
 
     if (teacherPayment.length === 0) {
@@ -136,51 +150,19 @@ const getTeacherPaymentStatistics = async (filter = {}) => {
 const recordTeacherPayment = async (teacherId, paymentData) => {
     const teacherPayments = await getTeacherPaymentByTeacherId(teacherId);
 
-    let total = 0;
-    const paymentIds = [];
-
-    // Check status and collect IDs
-    teacherPayments.forEach(item => {
-        if (item.status === 'paid') {
-            throw new ApiError(httpStatus.BAD_REQUEST, 'Payment was fully paid');
-        }
-        total += item.totalAmount;
-        paymentIds.push(item._id);
-    });
-
-    // Validate payment amount
-    if (paymentData.amount !== total) {
-        throw new ApiError(httpStatus.BAD_REQUEST, `Amount must be equal to total amount: ${total}`);
+    if (teacherPayments.status === 'paid') {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Payment was fully paid');
     }
 
-    // Bulk update all payments
-    const updateResult = await TeacherPayment.updateMany(
-        { _id: { $in: paymentIds } },
-        {
-            $set: {
-                status: 'paid'
-            }
-        }
-    );
+    // Validate payment amount
+    if (paymentData.amount > (teacherPayments.totalAmount - teacherPayments.paidAmount)) {
+        throw new ApiError(httpStatus.BAD_REQUEST, `Amount must be less than or equal to total amount: ${total}`);
+    }
 
-    const teacher = await Teacher.findByIdAndUpdate(teacherId, {
-        paymentHistory: {
-            amount: paymentData.amount,
-            method: paymentData.method || 'cash',
-            note: paymentData.note | '',
-            date: new Date()
-        },
-    }, { populate: { path: 'userId', select: 'name' }, select: 'userId' })
-
-    // Get updated payments
-    const updatedPayments = await TeacherPayment.find({ _id: { $in: paymentIds } })
-        .populate({ path: 'classId', select: 'name' });
-
-    logger.info(`Teacher payment of ${teacherId} recorded as paid. Updated ${updateResult.modifiedCount} records`);
-    return {
-        teacher,
-        payment: updatedPayments
-    };
+    teacherPayments.paidAmount = paymentData.amount
+    await teacherPayments.save()
+    logger.info(`Teacher payment of ${teacherId} recorded as paid. `);
+    return teacherPayments
 };
 
 module.exports = {

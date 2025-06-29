@@ -115,7 +115,7 @@ const getTeacherPaymentByTeacherId = async (teacherId) => {
             { path: 'classes', populate: { path: 'classId', select: 'name year' } }
         ]);
 
-    if (teacherPayment.length === 0) {
+    if (!teacherPayment) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Teacher payment not found');
     }
     return teacherPayment;

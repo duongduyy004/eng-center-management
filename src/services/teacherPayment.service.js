@@ -96,7 +96,7 @@ const autoUpdateTeacherPayment = async (attendanceData) => {
 const queryTeacherPayments = async (filter, options) => {
     const teacherPayments = await TeacherPayment.paginate(filter, {
         ...options, populate: [
-            { path: 'classId', select: 'schedule name grade section year' },
+            { path: 'classes', populate: { path: 'classId', select: 'name year' } },
             { path: 'teacherId', select: 'userId', populate: { path: 'userId', select: 'name' } }
         ]
     })

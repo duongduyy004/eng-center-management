@@ -26,7 +26,7 @@ const recordTeacherPayment = {
     }),
     body: Joi.object().keys({
         amount: Joi.number().min(0),
-        method: Joi.string().valid('cash', 'bank_transfer', 'cash').default('cash'),
+        method: Joi.string().valid('cash', 'bank_transfer').default('cash'),
         note: Joi.string().allow(''),
     }),
 };

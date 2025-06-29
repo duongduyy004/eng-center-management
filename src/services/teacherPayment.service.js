@@ -160,6 +160,12 @@ const recordTeacherPayment = async (teacherId, paymentData) => {
     }
 
     teacherPayments.paidAmount = paymentData.amount
+    teacherPayments.paymentHistory = {
+        amount: paymentData.amount,
+        date: new Date(),
+        method: paymentData.method,
+        note: paymentData.note
+    }
     await teacherPayments.save()
     logger.info(`Teacher payment of ${teacherId} recorded as paid. `);
     return teacherPayments

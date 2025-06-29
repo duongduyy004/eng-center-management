@@ -37,6 +37,7 @@ const teacherPaymentSchema = new mongoose.Schema({
     },
     paymentHistory: {
         amount: Number,
+        date: Date,
         method: {
             type: String,
             enum: ['cash', 'bank_transfer']

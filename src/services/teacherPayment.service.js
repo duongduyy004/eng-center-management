@@ -94,6 +94,16 @@ const autoUpdateTeacherPayment = async (attendanceData) => {
  * @returns {Promise<QueryResult>}
  */
 const queryTeacherPayments = async (filter, options) => {
+    if (filter.startMonth && filter.endMonth) {
+        Object.assign(filter, {
+            month: {
+                $gte: parseInt(filter.startMonth),
+                $lte: parseInt(filter.endMonth)
+            }
+        })
+        delete filter.startMonth;
+        delete filter.endMonth
+    }
     const teacherPayments = await TeacherPayment.paginate(filter, {
         ...options, populate: [
             { path: 'classes', populate: { path: 'classId', select: 'name year' } },

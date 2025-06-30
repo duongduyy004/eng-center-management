@@ -6,7 +6,7 @@ const { teacherPaymentService } = require('../services');
 
 
 const getTeacherPayments = catchAsync(async (req, res) => {
-    const filter = pick(req.query, ['teacherId', 'classId', 'month', 'year', 'status']);
+    const filter = pick(req.query, ['teacherId', 'classId', 'month', 'year', 'status', 'startMonth', 'endMonth']);
     const options = pick(req.query, ['sortBy', 'limit', 'page']);
     const result = await teacherPaymentService.queryTeacherPayments(filter, options);
     res.send(result);

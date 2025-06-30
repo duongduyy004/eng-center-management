@@ -4,7 +4,7 @@ const catchAsync = require('../utils/catchAsync');
 const { paymentService } = require('../services');
 
 const getPayments = catchAsync(async (req, res) => {
-    const filter = pick(req.query, ['studentId', 'classId', 'month', 'year', 'status']);
+    const filter = pick(req.query, ['studentId', 'classId', 'month', 'year', 'status', 'startMonth', 'endMonth']);
     const options = pick(req.query, ['sortBy', 'limit', 'page']);
     const result = await paymentService.queryPayments(filter, options);
     res.send(result);

@@ -13,6 +13,16 @@ const logger = require('../config/logger');
  * @returns {Promise<QueryResult>}
  */
 const queryPayments = async (filter, options) => {
+    if (filter.startMonth && filter.endMonth) {
+        Object.assign(filter, {
+            month: {
+                $gte: parseInt(filter.startMonth),
+                $lte: parseInt(filter.endMonth)
+            }
+        })
+        delete filter.startMonth;
+        delete filter.endMonth
+    }
     const payments = await Payment.paginate(filter, {
         ...options, populate: [
             { path: 'studentId', populate: { path: 'userId', select: 'name' }, select: 'userId' },

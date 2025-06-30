@@ -9,11 +9,15 @@ const getTotalPayment = async () => {
         {
             $group: {
                 _id: null,
-                total: { $sum: '$finalAmount' }
+                total: { $sum: '$finalAmount' },
+                paid: { $sum: '$paidAmount' }
             }
         }
     ]);
-    return result.length > 0 ? result[0].total : 0;
+    return result.length > 0 ? {
+        total: result[0].total,
+        paid: result[0].paid
+    } : 0;
 };
 
 /**

@@ -95,6 +95,7 @@ const autoUpdateTeacherPayment = async (attendanceData) => {
  */
 const queryTeacherPayments = async (filter, options) => {
     if (filter.startMonth && filter.endMonth) {
+
         Object.assign(filter, {
             month: {
                 $gte: parseInt(filter.startMonth),

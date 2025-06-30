@@ -50,7 +50,10 @@ const getDayNames = (dayNumbers) => {
 };
 
 const queryClasses = async (filter, options) => {
-    const aClass = await Class.paginate(filter, options);
+    const aClass = await Class.paginate(filter, {
+        ...options, populate:
+            { path: 'teacherId', populate: { path: 'userId', select: 'name email' }, select: 'userId' }
+    });
     return aClass;
 }
 

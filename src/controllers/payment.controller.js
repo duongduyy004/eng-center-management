@@ -7,7 +7,7 @@ const getTotalPayment = catchAsync(async (req, res) => {
     const result = await paymentService.getTotalPayment()
     res.status(httpStatus.OK).json({
         message: 'Success',
-        total: result
+        data: result
     })
 })
 

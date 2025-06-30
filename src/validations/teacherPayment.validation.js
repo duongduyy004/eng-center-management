@@ -3,11 +3,11 @@ const { objectId } = require('./custom.validation');
 
 const getTeacherPayments = {
     query: Joi.object().keys({
-        teacherId: Joi.string().custom(objectId),
-        classId: Joi.string().custom(objectId),
         month: Joi.number().integer().min(1).max(12),
         year: Joi.number().integer().min(2020).max(2030),
         status: Joi.string().valid('pending', 'paid'),
+        startMonth: Joi.string().min(1).max(12),
+        endMonth: Joi.string().min(1).max(12),
         sortBy: Joi.string(),
         limit: Joi.number().integer(),
         page: Joi.number().integer(),

@@ -146,9 +146,6 @@ const getTodayAttendanceSession = async (classId) => {
         { path: 'classId', select: 'name grade section' },
         { path: 'students.studentId', select: 'userId studentId', populate: { path: 'userId', select: 'name' } }
     ]);
-    console.log('check start', startOfDay)
-    console.log('check end', endOfDay)
-    console.log('check attendance', attendance)
 
     // If attendance session doesn't exist, create new one
     if (!attendance) {

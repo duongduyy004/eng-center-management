@@ -119,10 +119,8 @@ const deleteChild = async (parentId, studentId) => {
         throw new ApiError(httpStatus.NOT_FOUND, 'Child not found or not associated with this parent');
     }
 
-    student.parentId = null;
-    parent.studentIds = parent.studentIds.filter(item => item.toString() !== studentId)
-    await student.save();
-    await parent.save();
+    await Student.findByIdAndUpdate(student.id, { $unset: { parentId: 1 } })
+    await Parent.findByIdAndUpdate(parent.id, { $pull: { studentIds: student.id } })
 
     return { message: 'Child removed successfully' };
 };

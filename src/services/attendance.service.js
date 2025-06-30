@@ -43,7 +43,7 @@ const transformAttendanceData = (attendance) => {
  * @returns {Promise<Attendance>}
  */
 const createAttendanceSession = async (attendanceBody) => {
-    const { classId, date = Date.now() } = attendanceBody;
+    const { classId, date = new Date() } = attendanceBody;
 
     // Verify class exists
     const classInfo = await Class.findById(classId);
@@ -111,7 +111,7 @@ const getTodayAttendanceSession = async (classId) => {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Class schedule not found');
     }
 
-    const today = new Date(new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+    const today = new Date();
     const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 
     // Check if today is in the scheduled days

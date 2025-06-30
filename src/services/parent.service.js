@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const { Parent, Student, User, Attendance, Payment } = require("../models");
+const { Parent, Student, User } = require("../models");
 const ApiError = require('../utils/ApiError');
 const { userService } = require('.');
 
@@ -17,14 +17,6 @@ const queryParents = async (filter, options) => {
         const userIds = users.map(user => user._id);
         filter.userId = { $in: userIds };
         delete filter.name;
-    }
-    if (filter.email) {
-        const users = await User.find({
-            email: { $regex: filter.email, $options: 'i' }
-        }).select('_id');
-        const userIds = users.map(user => user._id);
-        filter.userId = { $in: userIds };
-        delete filter.email;
     }
     const parents = await Parent.paginate(filter, {
         ...options, populate: [

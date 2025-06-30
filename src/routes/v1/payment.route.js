@@ -10,6 +10,9 @@ router
     .route('/')
     .get(auth('getPayments'), validate(paymentValidation.getPayments), paymentController.getPayments);
 
+router.route('/total')
+    .get(auth('getPayments'), paymentController.getTotalPayment)
+
 router
     .route('/:paymentId/record')
     .post(auth('managePayments'), validate(paymentValidation.recordPayment), paymentController.recordPayment);
@@ -17,5 +20,6 @@ router
 router
     .route('/:paymentId/reminder')
     .post(auth('managePayments'), validate(paymentValidation.sendPaymentReminder), paymentController.sendPaymentReminder);
+
 
 module.exports = router;

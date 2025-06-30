@@ -3,6 +3,14 @@ const pick = require('../utils/pick');
 const catchAsync = require('../utils/catchAsync');
 const { paymentService } = require('../services');
 
+const getTotalPayment = catchAsync(async (req, res) => {
+    const result = await paymentService.getTotalPayment()
+    res.status(httpStatus.OK).json({
+        message: 'Success',
+        total: result
+    })
+})
+
 const getPayments = catchAsync(async (req, res) => {
     const filter = pick(req.query, ['studentId', 'classId', 'month', 'year', 'status', 'startMonth', 'endMonth']);
     const options = pick(req.query, ['sortBy', 'limit', 'page']);
@@ -15,8 +23,6 @@ const recordPayment = catchAsync(async (req, res) => {
     res.send(payment);
 });
 
-
-
 const sendPaymentReminder = catchAsync(async (req, res) => {
     const result = await paymentService.sendPaymentReminder(req.params.paymentId);
     res.send(result);
@@ -25,5 +31,6 @@ const sendPaymentReminder = catchAsync(async (req, res) => {
 module.exports = {
     getPayments,
     recordPayment,
-    sendPaymentReminder
+    sendPaymentReminder,
+    getTotalPayment
 };

@@ -3,6 +3,19 @@ const { Payment, Student, Class, Attendance } = require('../models');
 const ApiError = require('../utils/ApiError');
 const logger = require('../config/logger');
 
+const getTotalPayment = async () => {
+
+    const result = await Payment.aggregate([
+        {
+            $group: {
+                _id: null,
+                total: { $sum: '$finalAmount' }
+            }
+        }
+    ]);
+    return result.length > 0 ? result[0].total : 0;
+};
+
 /**
  * Query for payments
  * @param {Object} filter - Mongo filter
@@ -211,5 +224,6 @@ module.exports = {
     getPaymentById,
     recordPayment,
     sendPaymentReminder,
-    autoUpdatePaymentRecords
+    autoUpdatePaymentRecords,
+    getTotalPayment
 };

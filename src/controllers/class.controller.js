@@ -4,7 +4,7 @@ const httpStatus = require('http-status');
 const pick = require('../utils/pick');
 
 const getClasses = catchAsync(async (req, res) => {
-    const filter = pick(req.query, ['year', 'grade']);
+    const filter = pick(req.query, ['year', 'grade', 'section']);
     const options = pick(req.query, ['sortBy', 'limit', 'page']);
     const result = await classService.queryClasses(filter, options);
     res.send(result);

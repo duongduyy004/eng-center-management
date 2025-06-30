@@ -28,8 +28,8 @@ const handleRoleId = async (user) => {
     Object.assign(userObj, { studentId: student.id })
   }
   if (user.role === 'teacher') {
-    const teacher = await Teacher.findOne({ userId: user.id })
-    Object.assign(userObj, { teacherId: teacher.id })
+    const teacher = await Teacher.findOne({ userId: user.id }).select('salaryPerLesson qualifications specialization description')
+    Object.assign(userObj, { teacher, teacherId: teacher.id })
   }
   if (user.role === 'parent') {
     const parent = await Parent.findOne({ userId: user.id })

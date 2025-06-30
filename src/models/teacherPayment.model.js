@@ -35,7 +35,7 @@ const teacherPaymentSchema = new mongoose.Schema({
         enum: ['pending', 'partial', 'paid'],
         default: 'pending'
     },
-    paymentHistory: {
+    paymentHistory: [{
         amount: Number,
         date: Date,
         method: {
@@ -43,7 +43,7 @@ const teacherPaymentSchema = new mongoose.Schema({
             enum: ['cash', 'bank_transfer']
         },
         note: String
-    }
+    }]
 },
     {
         timestamps: true,

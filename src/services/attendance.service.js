@@ -109,7 +109,7 @@ const getTodayAttendanceSession = async (classId) => {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Class schedule not found');
     }
 
-    const today = new Date();
+    const today = new Date(new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
     const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 
     // Check if today is in the scheduled days

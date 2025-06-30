@@ -13,7 +13,7 @@ const createTeacher = catchAsync(async (req, res) => {
 });
 
 const getTeachers = catchAsync(async (req, res) => {
-    const filter = pick(req.query, ['name', 'isActive', 'specialization', 'email']);
+    const filter = pick(req.query, ['name', 'isActive']);
     const options = pick(req.query, ['sortBy', 'limit', 'page']);
     const result = await teacherService.queryTeachers(filter, options);
     res.send(result);

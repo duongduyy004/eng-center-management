@@ -122,7 +122,7 @@ const enrollStudentToClass = async (classId, studentData) => {
     if (!classInfo.schedule || !classInfo.schedule.dayOfWeeks || !classInfo.schedule.timeSlots) {
         logger.warn(`Class ${classId} has incomplete schedule data, skipping schedule conflict validation`);
     } else {
-        logger.log(`Target class schedule: Days ${getDayNames(classInfo.schedule.dayOfWeeks)}, Time ${classInfo.schedule.timeSlots.startTime}-${classInfo.schedule.timeSlots.endTime}`);
+        logger.info(`Target class schedule: Days ${getDayNames(classInfo.schedule.dayOfWeeks)}, Time ${classInfo.schedule.timeSlots.startTime}-${classInfo.schedule.timeSlots.endTime}`);
     }
 
     // Get current number of enrolled students

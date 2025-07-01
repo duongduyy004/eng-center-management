@@ -292,24 +292,15 @@ const getClassStudents = async (classId, options = {}) => {
     // Build filter to find students enrolled in this class
     const filter = {
         'classes.classId': classId,
-        'classes.status': 'active'
-    };
-
-    // Default options for pagination
-    const queryOptions = {
-        limit: options.limit || 10,
-        page: options.page || 1,
-        sortBy: options.sortBy || 'createdAt:desc', // Use default sort, will sort by lastname manually
-        populate: ['userId', 'parentId']
     };
 
     // Get students using pagination
-    const studentsResult = await Student.paginate(filter, queryOptions);
+    const studentsResult = await Student.findWithDeleted(filter).populate('userId');
 
     // Transform student data to include class-specific info
-    const studentsWithClassInfo = studentsResult.data.map(student => {
+    const studentsWithClassInfo = studentsResult.map(student => {
         const classEnrollment = student.classes.find(
-            c => c.classId.toString() === classId.toString() && c.status === 'active'
+            c => c.classId.toString() === classId.toString()
         );
 
         return {
@@ -335,15 +326,11 @@ const getClassStudents = async (classId, options = {}) => {
             section: classInfo.section,
             year: classInfo.year,
             maxStudents: classInfo.maxStudents,
+            status: classInfo.status,
             teacher: classInfo.teacherId
         },
         students: studentsWithClassInfo,
-        pagination: {
-            page: studentsResult.page,
-            limit: studentsResult.limit,
-            totalPages: studentsResult.totalPages,
-            totalResults: studentsResult.totalResults
-        }
+        totalStudents: studentsWithClassInfo.length
     };
 };
 
@@ -521,38 +508,43 @@ const updateClassStatus = async () => {
     };
 
     try {
-        // 1. Update upcoming classes to active (when start date is reached)
-        const upcomingToActive = await Class.updateMany(
-            {
-                status: 'upcoming',
-                'schedule.startDate': { $eq: today }
-            },
-            {
-                $set: {
-                    status: 'active',
-                    updatedAt: new Date()
-                }
-            }
-        );
+        const upcomingClasses = await Class.find({
+            status: 'upcoming',
+            'schedule.startDate': { $eq: today }
+        })
 
-        updatedClasses.upcomingToActive = upcomingToActive.modifiedCount;
+        for (const classDoc of upcomingClasses) {
+            classDoc.status = 'active';
+            classDoc.updatedAt = new Date();
+            await classDoc.save();
+            updatedClasses.upcomingToActive++;
 
-        // 2. Update active classes to closed (when end date is passed)
-        const activeToClosed = await Class.updateMany(
-            {
-                status: 'active',
-                'schedule.endDate': { $eq: today }
-            },
-            {
-                $set: {
-                    status: 'closed',
-                    updatedAt: new Date()
-                }
-            }
-        );
+            logger.info(`Class ${classDoc.name} (${classDoc.grade}-${classDoc.section}) status updated from upcoming to active`);
+        }
 
-        updatedClasses.activeToClosing = activeToClosed.modifiedCount;
-        updatedClasses.totalUpdated = upcomingToActive.modifiedCount + activeToClosed.modifiedCount;
+        const activeClasses = await Class.find({
+            status: 'active',
+            'schedule.endDate': { $lte: today }
+        });
+        console.log(activeClasses)
+        for (const classDoc of activeClasses) {
+            // Count students before closing the class
+            const studentsInClass = await Student.countDocuments({
+                'classes.classId': classDoc._id,
+                'classes.status': { $in: ['active', 'upcoming'] }
+            });
+
+            classDoc.status = 'closed';
+            classDoc.updatedAt = new Date();
+            await classDoc.save();
+
+            updatedClasses.activeToClosing++;
+            updatedClasses.studentsUpdated += studentsInClass;
+
+            logger.info(`Class ${classDoc.name} (${classDoc.grade}-${classDoc.section}) status updated from active to closed. ${studentsInClass} students marked as completed.`);
+        }
+
+        updatedClasses.totalUpdated = updatedClasses.upcomingToActive + updatedClasses.activeToClosing;
 
         if (updatedClasses.totalUpdated > 0) {
             logger.info(`Class status update completed: ${updatedClasses.upcomingToActive} upcoming→active, ${updatedClasses.activeToClosing} active→closed`);

@@ -101,6 +101,11 @@ const updateStudentById = async (studentId, updateBody, user) => {
 
 const deleteStudentById = async (studentId) => {
     const student = await getStudentById(studentId);
+    for (const item of student.classes) {
+        if (item.status === 'active') {
+            throw new ApiError(httpStatus.NOT_ACCEPTABLE, 'Student is active in a class, not allowed to delete')
+        }
+    }
     await userService.deleteUserById(student.userId)
     await student.delete();
     return student;

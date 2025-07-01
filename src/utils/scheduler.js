@@ -7,7 +7,7 @@ const logger = require('../config/logger');
  */
 const startClassStatusScheduler = async () => {
     // Chạy mỗi ngày lúc 0:00 sáng
-    cron.schedule('0 0 * * *', async () => {
+    cron.schedule('2 0 * * *', async () => {
         logger.info('Starting scheduled class status update...');
 
         try {
@@ -29,7 +29,10 @@ const startClassStatusScheduler = async () => {
 };
 
 const startSendEmailScheduler = async () => {
+    //Chạy mỗi lần vào 7:00 ngày 1 hàng tháng
     cron.schedule('0 7 1 * *', async () => {
+        logger.info('Starting scheduled send email to parent...');
+
         try {
             const totalEmailSent = await parentService.sendEmailToParent()
             logger.info(`Email sent completed: ${totalEmailSent}`);
@@ -41,6 +44,7 @@ const startSendEmailScheduler = async () => {
         timezone: "Asia/Ho_Chi_Minh"
     })
 
+    logger.info('Email send scheduler started successfully');
 }
 
 module.exports = {

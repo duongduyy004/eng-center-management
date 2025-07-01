@@ -21,15 +21,14 @@ const updateAttendanceSession = {
     params: Joi.object().keys({
         attendanceId: Joi.string().custom(objectId)
     }),
-    body: Joi.object().keys({
-        students: Joi.array().items(
-            Joi.object().keys({
-                studentId: Joi.string().custom(objectId).required(),
-                status: Joi.string().valid('present', 'absent', 'late').required(),
-                note: Joi.string().allow('').default('')
-            })
-        ).required()
-    })
+    body: Joi.array().items({
+        studentId: Joi.string().custom(objectId).required(),
+        name: Joi.string().required(),
+        status: Joi.string().valid('present', 'absent', 'late').required(),
+        note: Joi.string().allow('').default(''),
+        checkedAt: Joi.date()
+    }).required()
+
 };
 
 const getTodayAttendanceSession = {

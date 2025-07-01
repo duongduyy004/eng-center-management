@@ -22,10 +22,8 @@ const transformAttendanceData = (attendance) => {
         date: attendance.date,
         teacherId: attendance.teacherId,
         students: attendance.students.map(student => ({
-            studentId: {
-                name: student.studentId.userId.name,
-                id: student.studentId._id
-            },
+            name: student.name,
+            studentId: student.studentId,
             status: student.status,
             note: student.note,
             checkedAt: student.checkedAt
@@ -70,11 +68,12 @@ const createAttendanceSession = async (attendanceBody) => {
     const studentsInClass = await Student.find({
         'classes.classId': classId,
         'classes.status': 'active'
-    });
+    }).populate('userId');
 
     // Create attendance records for all students (default: absent)
     const studentAttendanceRecords = studentsInClass.map(student => ({
         studentId: student._id,
+        studentName: student.userId.name,
         status: 'absent',
         checkedAt: new Date()
     }));    // Create attendance session
@@ -88,7 +87,6 @@ const createAttendanceSession = async (attendanceBody) => {
     return transformAttendanceData(
         await attendance.populate([
             { path: 'classId', select: 'name grade section' },
-            { path: 'students.studentId', select: 'userId', populate: { path: 'userId', select: 'name' } }
         ])
     );
 };
@@ -144,7 +142,6 @@ const getTodayAttendanceSession = async (classId) => {
         }
     }).populate([
         { path: 'classId', select: 'name grade section' },
-        { path: 'students.studentId', select: 'userId studentId', populate: { path: 'userId', select: 'name' } }
     ]);
 
     // If attendance session doesn't exist, create new one
@@ -185,6 +182,7 @@ const updateAttendanceSession = async (attendanceId, studentsData) => {
 
         if (studentIndex !== -1) {
             attendance.students[studentIndex].status = studentData.status;
+            attendance.students[studentIndex].name = studentData.name
             attendance.students[studentIndex].note = studentData.note || '';
             attendance.students[studentIndex].checkedAt = new Date();
         }
@@ -201,7 +199,6 @@ const updateAttendanceSession = async (attendanceId, studentsData) => {
     return transformAttendanceData(
         await attendance.populate([
             { path: 'classId', select: 'name grade section' },
-            { path: 'students.studentId', select: 'userId', populate: { path: 'userId', select: 'name' } }
         ])
     );
 };
@@ -239,7 +236,6 @@ const completeAttendanceSession = async (attendanceId) => {
 const getAttendanceById = async (attendanceId) => {
     const attendance = await Attendance.findById(attendanceId).populate([
         { path: 'classId', select: 'name grade section' },
-        { path: 'students.studentId', select: 'userId', populate: { path: 'userId', select: 'name' } }
     ]);
     if (!attendance) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Attendance record not found');

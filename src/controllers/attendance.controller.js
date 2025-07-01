@@ -29,8 +29,7 @@ const getTodayAttendanceSession = catchAsync(async (req, res) => {
 
 const updateAttendanceSession = catchAsync(async (req, res) => {
     const { attendanceId } = req.params;
-    const { students } = req.body;
-    const attendance = await attendanceService.updateAttendanceSession(attendanceId, students);
+    const attendance = await attendanceService.updateAttendanceSession(attendanceId, req.body);
     res.send({
         message: 'Attendance session updated successfully',
         data: attendance

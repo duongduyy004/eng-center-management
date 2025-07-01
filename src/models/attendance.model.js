@@ -11,6 +11,10 @@ const attendanceSchema = new mongoose.Schema({
         {
             _id: false,
             studentId: { type: mongoose.Types.ObjectId, ref: 'Student', required: true },
+            name: {
+                type: String,
+                required: true
+            },
             status: {
                 type: String,
                 enum: ['present', 'absent', 'late'],
@@ -36,7 +40,7 @@ const attendanceSchema = new mongoose.Schema({
 
 attendanceSchema.plugin(toJSON)
 attendanceSchema.plugin(paginate);
-attendanceSchema.plugin(softDelete, { overrideMethods: true })
+attendanceSchema.plugin(softDelete)
 
 const Attendance = mongoose.model('Attendance', attendanceSchema)
 

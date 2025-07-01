@@ -80,13 +80,12 @@ const getStudentById = async (studentId) => {
 const updateStudentById = async (studentId, updateBody, user) => {
     const { userData, studentData } = updateBody
     const student = await getStudentById(studentId)
-    if (user.role !== 'admin') {
-        delete userData.name;
+    if (user.role !== 'admin' && studentData) {
         delete studentData;
     }
     await userService.updateUserById(student.userId, { ...userData, role: 'student' })
 
-    if (studentData.length > 0) {
+    if (studentData && studentData.length > 0) {
         student.classes = studentData;
     }
     await student.save()

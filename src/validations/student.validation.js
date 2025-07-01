@@ -39,8 +39,8 @@ const updateStudent = {
     }),
     body: Joi.object().keys({
         userData: Joi.object().keys({
-            name: Joi.string().required(),
-            email: Joi.string().email().required(),
+            name: Joi.string(),
+            email: Joi.string().email(),
             dayOfBirth: Joi.string(),
             address: Joi.string(),
             gender: Joi.string(),

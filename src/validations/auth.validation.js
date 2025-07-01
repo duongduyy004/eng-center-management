@@ -9,7 +9,7 @@ const register = {
     role: Joi.string().required(),
     gender: Joi.string(),
     phone: Joi.string(),
-    dayOfBirth: Joi.date()
+    dayOfBirth: Joi.string()
   }),
 };
 

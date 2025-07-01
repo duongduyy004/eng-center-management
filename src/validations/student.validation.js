@@ -45,13 +45,7 @@ const updateStudent = {
             address: Joi.string(),
             gender: Joi.string(),
             phone: Joi.string(),
-        }),
-        studentData: Joi.array().items(
-            Joi.object().keys({
-                classId: Joi.string().custom(objectId),
-                discountPercent: Joi.number().min(0).max(100),
-                status: Joi.string()
-            }))
+        })
     })
 };
 

@@ -50,7 +50,7 @@ const updateTeacher = {
             email: Joi.string().email(),
             phone: Joi.string(),
             address: Joi.string(),
-            dayOfBirth: Joi.date(),
+            dayOfBirth: Joi.string(),
             gender: Joi.string().valid('male', 'female', 'other')
         }),
         teacherData: Joi.object().keys({

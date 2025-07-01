@@ -200,7 +200,7 @@ const autoUpdatePaymentRecords = async (attendance) => {
 
                 await paymentRecord.save();
                 logger.info(`Updated payment record for student ${studentId}, month ${month}/${year}`);
-            } else {
+            } else if (attendedLessons > 0) {
                 // Create new payment record
                 const newPayment = new Payment({
                     studentId: studentId,

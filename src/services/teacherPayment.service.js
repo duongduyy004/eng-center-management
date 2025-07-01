@@ -120,7 +120,7 @@ const queryTeacherPayments = async (filter, options) => {
  * @returns {Promise<TeacherPayment>}
  */
 const getTeacherPaymentByTeacherId = async (teacherId) => {
-    const teacherPayment = await TeacherPayment.findOne({ teacherId })
+    const teacherPayment = await TeacherPayment.find({ teacherId })
         .populate([
             { path: 'teacherId', populate: { path: 'userId', select: 'name email phone' }, select: 'teacherId' },
             { path: 'classes', populate: { path: 'classId', select: 'name year' } }

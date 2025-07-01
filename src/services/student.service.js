@@ -86,10 +86,16 @@ const updateStudentById = async (studentId, updateBody, user) => {
     await userService.updateUserById(student.userId, { ...userData, role: 'student' })
 
     if (studentData && studentData.length > 0) {
-        student.classes = studentData;
+        for (const oldItem of student.classes) {
+            studentData.map(newItem => {
+                if (oldItem.classId.id == newItem.classId) {
+                    newItem.discountPercent && oldItem.$set('discountPercent', newItem.discountPercent);
+                    newItem.status && oldItem.$set('status', newItem.status);
+                }
+            })
+        }
     }
     await student.save()
-
     return student
 }
 

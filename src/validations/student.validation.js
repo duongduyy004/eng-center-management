@@ -45,6 +45,11 @@ const updateStudent = {
             address: Joi.string(),
             gender: Joi.string(),
             phone: Joi.string(),
+        }),
+        studentData: Joi.array().items({
+            classId: Joi.string().custom(objectId).required(),
+            discountPercent: Joi.number(),
+            status: Joi.string()
         })
     })
 };

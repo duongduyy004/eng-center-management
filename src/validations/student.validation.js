@@ -64,9 +64,7 @@ const deleteStudent = {
 const getMonthlyChanges = {
     query: Joi.object().keys({
         year: Joi.number().integer().min(2020).max(2030),
-        months: Joi.number().integer().min(1).max(12),
-        startDate: Joi.date(),
-        endDate: Joi.date(),
+        month: Joi.number().integer().min(1).max(12),
         classId: Joi.string().custom(objectId)
     })
 };

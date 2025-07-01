@@ -23,23 +23,6 @@ const convertTimeToMinutes = (timeString) => {
 };
 
 /**
- * Check if two time ranges overlap
- * @param {string} start1 - Start time of first range
- * @param {string} end1 - End time of first range  
- * @param {string} start2 - Start time of second range
- * @param {string} end2 - End time of second range
- * @returns {boolean} - True if ranges overlap
- */
-const doTimeRangesOverlap = (start1, end1, start2, end2) => {
-    const start1Minutes = convertTimeToMinutes(start1);
-    const end1Minutes = convertTimeToMinutes(end1);
-    const start2Minutes = convertTimeToMinutes(start2);
-    const end2Minutes = convertTimeToMinutes(end2);
-
-    return start2Minutes < end1Minutes && end2Minutes > start1Minutes;
-};
-
-/**
  * Convert day numbers to day names
  * @param {Array} dayNumbers - Array of numbers (0=Sunday, 1=Monday, etc.)
  * @returns {string} - Comma-separated day names
@@ -527,6 +510,61 @@ const unassignTeacherFromClass = async (classId) => {
     };
 };
 
+const updateClassStatus = async () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to beginning of day for accurate comparison
+
+    let updatedClasses = {
+        upcomingToActive: 0,
+        activeToClosing: 0,
+        totalUpdated: 0
+    };
+
+    try {
+        // 1. Update upcoming classes to active (when start date is reached)
+        const upcomingToActive = await Class.updateMany(
+            {
+                status: 'upcoming',
+                'schedule.startDate': { $eq: today }
+            },
+            {
+                $set: {
+                    status: 'active',
+                    updatedAt: new Date()
+                }
+            }
+        );
+
+        updatedClasses.upcomingToActive = upcomingToActive.modifiedCount;
+
+        // 2. Update active classes to closed (when end date is passed)
+        const activeToClosed = await Class.updateMany(
+            {
+                status: 'active',
+                'schedule.endDate': { $eq: today }
+            },
+            {
+                $set: {
+                    status: 'closed',
+                    updatedAt: new Date()
+                }
+            }
+        );
+
+        updatedClasses.activeToClosing = activeToClosed.modifiedCount;
+        updatedClasses.totalUpdated = upcomingToActive.modifiedCount + activeToClosed.modifiedCount;
+
+        if (updatedClasses.totalUpdated > 0) {
+            logger.info(`Class status update completed: ${updatedClasses.upcomingToActive} upcoming→active, ${updatedClasses.activeToClosing} active→closed`);
+        }
+
+        return updatedClasses;
+
+    } catch (error) {
+        logger.error('Error updating class statuses:', error);
+        throw error;
+    }
+};
 module.exports = {
     queryClasses,
     createClass,
@@ -536,5 +574,6 @@ module.exports = {
     getClassStudents,
     removeStudentFromClass,
     assignTeacherToClass,
-    unassignTeacherFromClass
+    unassignTeacherFromClass,
+    updateClassStatus
 }

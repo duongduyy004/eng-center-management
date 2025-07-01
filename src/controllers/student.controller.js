@@ -35,7 +35,7 @@ const deleteStudent = catchAsync(async (req, res) => {
 })
 
 const getMonthlyStudentChanges = catchAsync(async (req, res) => {
-    const filter = pick(req.query, ['year', 'months', 'startDate', 'endDate', 'classId']);
+    const filter = pick(req.query, ['year', 'month', 'startDate', 'endDate', 'classId']);
     const result = await studentService.getMonthlyStudentChanges(filter);
     res.send({
         message: 'Monthly student changes retrieved successfully',

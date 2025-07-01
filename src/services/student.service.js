@@ -341,39 +341,18 @@ const getStudentSchedule = async (studentId) => {
  * Get monthly student enrollment changes statistics
  * @param {Object} filter
  * @param {number} filter.year - Year to filter by
- * @param {number} filter.months - Number of months to show
- * @param {Date} filter.startDate - Start date for custom range
- * @param {Date} filter.endDate - End date for custom range
+ * @param {number} filter.month - Number of months to show
  * @param {ObjectId} filter.classId - Filter by specific class
  * @returns {Promise<Object>}
  */
 const getMonthlyStudentChanges = async (filter = {}) => {
-    const { year, months, startDate, endDate, classId } = filter;
+    const { year, month, classId } = filter;
 
     // Determine date range
-    let dateRange = {};
-    if (startDate && endDate) {
-        dateRange = {
-            $gte: new Date(startDate),
-            $lte: new Date(endDate)
-        };
-    } else if (year) {
-        const startOfYear = new Date(year, 0, 1);
-        const endOfYear = new Date(year, 11, 31, 23, 59, 59);
-        dateRange = {
-            $gte: startOfYear,
-            $lte: endOfYear
-        };
-    } else {
-        // Default to current year
-        const currentYear = new Date().getFullYear();
-        const startOfYear = new Date(currentYear, 0, 1);
-        const endOfYear = new Date(currentYear, 11, 31, 23, 59, 59);
-        dateRange = {
-            $gte: startOfYear,
-            $lte: endOfYear
-        };
-    }
+    let dateRange = {
+        $gte: new Date(year, month - 1, 1),
+        $lte: new Date(year, month, 1)
+    };
 
     // Build match stage for aggregation
     const matchStage = {

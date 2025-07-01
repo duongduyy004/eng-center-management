@@ -3,6 +3,7 @@ const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
 const { teacherController } = require('../../controllers');
 const { teacherValidation } = require('../../validations');
+const canSeeTeacher = require('../../middlewares/canSeeTeacher');
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ router
 
 router
     .route('/:teacherId')
-    .get(auth('getTeachers'), validate(teacherValidation.getTeacher), teacherController.getTeacher)
+    .get(auth('getTeachers'), canSeeTeacher(), validate(teacherValidation.getTeacher), teacherController.getTeacher)
     .patch(auth('manageTeachers'), validate(teacherValidation.updateTeacher), teacherController.updateTeacher)
     .delete(auth('manageTeachers'), validate(teacherValidation.deleteTeacher), teacherController.deleteTeacher);
 

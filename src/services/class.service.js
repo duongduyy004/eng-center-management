@@ -510,7 +510,7 @@ const updateClassStatus = async () => {
     try {
         const upcomingClasses = await Class.find({
             status: 'upcoming',
-            'schedule.startDate': { $eq: today }
+            'schedule.startDate': { $gte: today }
         })
 
         for (const classDoc of upcomingClasses) {
@@ -526,7 +526,7 @@ const updateClassStatus = async () => {
             status: 'active',
             'schedule.endDate': { $lte: today }
         });
-        console.log(activeClasses)
+
         for (const classDoc of activeClasses) {
             // Count students before closing the class
             const studentsInClass = await Student.countDocuments({

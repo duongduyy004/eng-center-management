@@ -7,7 +7,7 @@ const logger = require('../config/logger');
  */
 const startClassStatusScheduler = async () => {
     // Chạy mỗi ngày lúc 0:00 sáng
-    cron.schedule('2 0 * * *', async () => {
+    cron.schedule('0 0 * * *', async () => {
         logger.info('Starting scheduled class status update...');
 
         try {

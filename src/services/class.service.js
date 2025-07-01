@@ -307,7 +307,7 @@ const getClassStudents = async (classId, options = {}) => {
             id: student.id || student._id,
             name: student.userId?.name || 'N/A',
             email: student.userId?.email || 'N/A',
-            phone: student.userId.phone || 'N/A'
+            phone: student.userId?.phone || 'N/A'
         };
     });
 

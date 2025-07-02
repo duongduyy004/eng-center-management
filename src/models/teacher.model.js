@@ -14,15 +14,6 @@ const teacherSchema = new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: true
-    },
-    paymentHistory: {
-        amount: Number,
-        date: Date,
-        method: {
-            type: String,
-            enum: ['cash', 'bank_transfer'],
-        },
-        note: String,
     }
 },
     {

@@ -51,7 +51,6 @@ const getClassById = async (classId) => {
         throw new ApiError(httpStatus.NOT_FOUND, 'Class not found')
     }
     let result = aClass.toJSON()
-    console.log('check', aClass)
     return { ...result, teacherName: aClass.teacherId.userId.name, teacherId: aClass.teacherId._id };
 }
 

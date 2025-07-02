@@ -51,6 +51,7 @@ const getClassById = async (classId) => {
         throw new ApiError(httpStatus.NOT_FOUND, 'Class not found')
     }
     let result = aClass.toJSON()
+    console.log('check', aClass)
     return { ...result, teacherName: aClass.teacherId.userId.name, teacherId: aClass.teacherId._id };
 }
 
@@ -400,7 +401,7 @@ const removeStudentFromClass = async (classId, studentId) => {
  */
 const assignTeacherToClass = async (classId, teacherId) => {
     // Verify class exists
-    const classInfo = await getClassById(classId);
+    const classInfo = await Class.findById(classId);
 
     // Check if teacher exists and is active
     const teacher = await Teacher.findById(teacherId).populate('userId', 'name email phone');

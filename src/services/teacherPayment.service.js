@@ -158,8 +158,9 @@ const getTeacherPaymentStatistics = async (filter = {}) => {
  * @param {Object} paymentData
  * @returns {Promise<TeacherPayment[]>}
  */
-const recordTeacherPayment = async (teacherId, paymentData) => {
-    const teacherPayments = await getTeacherPaymentByTeacherId(teacherId);
+const recordTeacherPayment = async (teacherId, paymentData, filter) => {
+    const { month, year } = filter
+    const teacherPayments = await TeacherPayment.findOne({ teacherId, month, year });
 
     if (teacherPayments.status === 'paid') {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Payment was fully paid');
@@ -167,10 +168,10 @@ const recordTeacherPayment = async (teacherId, paymentData) => {
 
     // Validate payment amount
     if (paymentData.amount > (teacherPayments.totalAmount - teacherPayments.paidAmount)) {
-        throw new ApiError(httpStatus.BAD_REQUEST, `Amount must be less than or equal to total amount: ${total}`);
+        throw new ApiError(httpStatus.BAD_REQUEST, `Amount must be less than or equal to remaining amount: ${teacherPayments.totalAmount - teacherPayments.paidAmount}`);
     }
 
-    teacherPayments.paidAmount = paymentData.amount
+    teacherPayments.paidAmount += paymentData.amount
     teacherPayments.paymentHistory.push({
         amount: paymentData.amount,
         date: new Date(),

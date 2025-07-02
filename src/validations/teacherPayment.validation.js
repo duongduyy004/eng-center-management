@@ -27,8 +27,12 @@ const recordTeacherPayment = {
     body: Joi.object().keys({
         amount: Joi.number().min(0),
         method: Joi.string().valid('cash', 'bank_transfer').default('cash'),
-        note: Joi.string().allow(''),
+        note: Joi.string().allow('')
     }),
+    query: Joi.object().keys({
+        month: Joi.number().min(1).max(12).required(),
+        year: Joi.number().required()
+    })
 };
 
 

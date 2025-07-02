@@ -21,7 +21,8 @@ const getTeacherPayment = catchAsync(async (req, res) => {
 const recordTeacherPayment = catchAsync(async (req, res) => {
     const teacherPayment = await teacherPaymentService.recordTeacherPayment(
         req.params.teacherId,
-        req.body
+        req.body,
+        req.query
     );
     res.send(teacherPayment);
 });

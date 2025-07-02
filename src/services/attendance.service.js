@@ -73,7 +73,7 @@ const createAttendanceSession = async (attendanceBody) => {
     // Create attendance records for all students (default: absent)
     const studentAttendanceRecords = studentsInClass.map(student => ({
         studentId: student._id,
-        studentName: student.userId.name,
+        name: student.userId.name,
         status: 'absent',
         checkedAt: new Date()
     }));    // Create attendance session

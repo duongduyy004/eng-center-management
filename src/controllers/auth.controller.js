@@ -59,11 +59,194 @@ const sendVerificationEmail = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+
 const verifyEmail = catchAsync(async (req, res) => {
-  await authService.verifyEmail(req.query.token);
-  res.status(httpStatus.NO_CONTENT).send();
+  const { token } = req.query;
+
+  if (!token) {
+    return res.send(generateVerificationPage('error', 'Verification token is required'));
+  }
+
+  try {
+    await authService.verifyEmail(token);
+
+    // Return success page with auto-close
+    res.send(generateVerificationPage('success', 'Email verified successfully! This window will close automatically.'));
+
+  } catch (error) {
+    const errorMessage = error.message || 'Email verification failed';
+    res.send(generateVerificationPage('error', errorMessage));
+  }
 });
 
+const generateVerificationPage = (status, message) => {
+  const isSuccess = status === 'success';
+  const backgroundColor = isSuccess ? '#4CAF50' : '#f44336';
+  const icon = isSuccess ? '✅' : '❌';
+  const autoCloseScript = isSuccess ? `
+    setTimeout(() => {
+      window.close();
+      // If window.close() doesn't work (popup blockers), try redirect
+      if (!window.closed) {
+        window.location.href = '${process.env.FRONTEND_URL || 'about:blank'}';
+      }
+    }, 3000);
+  ` : '';
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Email Verification ${isSuccess ? 'Success' : 'Failed'}</title>
+        <style>
+            body { 
+                font-family: Arial, sans-serif; 
+                line-height: 1.6; 
+                color: #333; 
+                margin: 0; 
+                padding: 20px; 
+                background-color: #f5f5f5;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+            }
+            .container { 
+                max-width: 500px; 
+                background: white; 
+                border-radius: 10px; 
+                box-shadow: 0 0 20px rgba(0,0,0,0.1);
+                text-align: center;
+                padding: 40px 30px;
+            }
+            .header { 
+                background-color: ${backgroundColor}; 
+                color: white; 
+                padding: 30px; 
+                border-radius: 10px 10px 0 0; 
+                margin: -40px -30px 30px -30px;
+            }
+            .icon { 
+                font-size: 64px; 
+                margin-bottom: 20px; 
+            }
+            .message { 
+                font-size: 18px; 
+                margin-bottom: 20px; 
+            }
+            .countdown { 
+                font-size: 14px; 
+                color: #666; 
+                margin-top: 20px;
+            }
+            .manual-close-btn {
+                background-color: ${backgroundColor};
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                margin-top: 15px;
+            }
+            .manual-close-btn:hover {
+                opacity: 0.8;
+            }
+            .redirect-info {
+                font-size: 12px;
+                color: #888;
+                margin-top: 15px;
+                border-top: 1px solid #eee;
+                padding-top: 15px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <div class="icon">${icon}</div>
+                <h1>Email Verification ${isSuccess ? 'Successful' : 'Failed'}</h1>
+            </div>
+            
+            <div class="message">${message}</div>
+            
+            ${isSuccess ? `
+                <div class="countdown">
+                    This window will close automatically in <span id="countdown">3</span> seconds...
+                </div>
+                
+                <button class="manual-close-btn" onclick="closeWindow()">
+                    Close Window Now
+                </button>
+                
+                <div class="redirect-info">
+                    If the window doesn't close automatically, you can close it manually or 
+                    <a href="${process.env.FRONTEND_URL || '#'}" target="_blank">click here to continue</a>
+                </div>
+            ` : `
+                <button class="manual-close-btn" onclick="closeWindow()">
+                    Close Window
+                </button>
+                
+                <div class="redirect-info">
+                    <a href="${process.env.FRONTEND_URL || '#'}" target="_blank">Go back to main page</a> |
+                    <a href="#" onclick="location.reload()">Try again</a>
+                </div>
+            `}
+        </div>
+
+        <script>
+            let countdown = 3;
+            
+            function updateCountdown() {
+                const element = document.getElementById('countdown');
+                if (element) {
+                    element.textContent = countdown;
+                    countdown--;
+                    
+                    if (countdown < 0) {
+                        closeWindow();
+                    }
+                }
+            }
+            
+            function closeWindow() {
+                // Try multiple methods to close the window
+                try {
+                    // Method 1: Close current window
+                    window.close();
+                    
+                    // Method 2: If close doesn't work, try to go back
+                    setTimeout(() => {
+                        if (!window.closed) {
+                            window.history.back();
+                        }
+                    }, 500);
+                    
+                    // Method 3: Last resort - redirect
+                    setTimeout(() => {
+                        if (!window.closed) {
+                            window.location.href = '${process.env.FRONTEND_URL || 'about:blank'}';
+                        }
+                    }, 1000);
+                    
+                } catch (error) {
+                    console.log('Unable to close window automatically');
+                }
+            }
+            
+            // Auto-close functionality for success
+            ${autoCloseScript}
+            
+            // Update countdown every second
+            ${isSuccess ? 'setInterval(updateCountdown, 1000);' : ''}
+        </script>
+    </body>
+    </html>
+  `;
+};
 
 module.exports = {
   register,

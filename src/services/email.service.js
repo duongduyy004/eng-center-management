@@ -108,7 +108,7 @@ const sendVerificationEmail = async (to, token) => {
   const subject = 'Email Verification - English Center Management';
 
   // Update this URL to match your frontend application
-  const verificationEmailUrl = `${process.env.BACKEND_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
+  const verificationEmailUrl = `${process.env.BACKEND_URL}/api/v1/auth/verify-email?token=${token}`;
 
   // HTML version
   const html = `

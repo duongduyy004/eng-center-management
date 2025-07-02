@@ -65,7 +65,6 @@ const updateParentById = async (parentId, updateBody, user) => {
 
 const deleteParentById = async (parentId) => {
     const parent = await getParentById(parentId);
-    await userService.deleteUserById(parent.userId)
     await parent.delete();
     return parent;
 };

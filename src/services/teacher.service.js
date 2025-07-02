@@ -74,7 +74,6 @@ const updateTeacherById = async (teacherId, updateBody, role) => {
 
 const deleteTeacherById = async (teacherId) => {
     const teacher = await getTeacherById(teacherId);
-    await userService.deleteUserById(teacher.userId)
     await teacher.delete();
     return teacher;
 }

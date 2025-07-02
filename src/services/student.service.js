@@ -106,7 +106,6 @@ const deleteStudentById = async (studentId) => {
             throw new ApiError(httpStatus.NOT_ACCEPTABLE, 'Student is active in a class, not allowed to delete')
         }
     }
-    await userService.deleteUserById(student.userId)
     await student.delete();
     return student;
 };

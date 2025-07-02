@@ -46,11 +46,12 @@ const isClassExist = async (grade, section, year) => {
 }
 
 const getClassById = async (classId) => {
-    const aClass = await Class.findById(classId)
+    const aClass = await Class.findById(classId).populate({ path: 'teacherId', populate: { path: 'userId', select: 'name' } })
     if (!aClass) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Class not found')
     }
-    return aClass;
+    let result = aClass.toJSON()
+    return { ...result, teacherName: aClass.teacherId.userId.name, teacherId: aClass.teacherId._id };
 }
 
 /**

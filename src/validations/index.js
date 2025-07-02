@@ -7,3 +7,4 @@ module.exports.announcementValidation = require('./announcement.validation');
 module.exports.studentValidation = require('./student.validation');
 module.exports.teacherValidation = require('./teacher.validation');
 module.exports.parentValidation = require('./parent.validation');
+module.exports.dashboardvalidation = require('./dashboard.validation')

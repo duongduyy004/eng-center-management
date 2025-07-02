@@ -10,7 +10,7 @@ const allRoles = {
     'getParents', 'manageParents',
     'getAttendance', 'manageAttendance',
     'getTeacherPayments', 'manageTeacherPayments',
-    'manageAnnouncements'
+    'manageAnnouncements', 'getDashboards'
   ],
   teacher: [
     'getClasses', 'getStudents',

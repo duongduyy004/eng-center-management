@@ -47,19 +47,40 @@ const getAdminDashboard = async () => {
         }
     ])
 
+    const payments = await Payment.find().sort({ updatedAt: 'desc' }).populate({ path: 'studentId', populate: 'userId' }).limit(5)
+    let recentlyPayment = []
+    for (const payment of payments) {
+        recentlyPayment.push({
+            name: payment.studentId.userId.name,
+            paidAmount: payment.paidAmount,
+            status: payment.status
+        })
+    }
+
+    const teacherPayments = await TeacherPayment.find().sort({ updatedAt: 'desc' }).populate({ path: 'teacherId', populate: 'userId' }).limit(5)
+    let recentlySalary = []
+    for (const teacherPayment of teacherPayments) {
+        recentlySalary.push({
+            name: teacherPayment.teacherId.userId.name,
+            paidAmount: teacherPayment.paidAmount,
+            status: teacherPayment.status
+        })
+    }
     return {
         totalStudent,
         totalTeacher,
         activeClasses,
         upcomingClasses,
         closedClasses,
-        paymentInfo,
-        teacherPaymentInfo
+        paymentInfo: paymentInfo[0],
+        teacherPaymentInfo: teacherPaymentInfo[0],
+        recentlyPayment,
+        recentlySalary
     }
 }
 
 const getTeacherDashboard = async (teacherId) => {
-    const classes = (await Teacher.findById(teacherId).populate({ path: 'classes', select: 'status' }).select('classes')).classes;
+    const classes = (await Teacher.findById(teacherId).populate('classes').select('classes')).classes;
     const teachingClasses = classes.filter(item => item.status === 'active').length
     const closedClasses = classes.filter(item => item.status === 'closed').length
     const upcomingClasses = classes.filter(item => item.status === 'upcoming').length
@@ -90,17 +111,39 @@ const getTeacherDashboard = async (teacherId) => {
         }
     ])
 
+    let activeClasses = []
+    for (const aClass of classes) {
+        if (aClass.status === 'active') {
+            activeClasses.push({
+                name: aClass.name,
+                schedule: aClass.schedule,
+                room: aClass.room
+            })
+        }
+    }
+
+    const teacherPayment = await TeacherPayment.findOne({ teacherId }).sort({ month: 'desc' })
+    let totalLessons = teacherPayment.classes.reduce((accumlator, currentValue) => accumlator + currentValue.totalLessons, 0)
+    let recentlySalary = {
+        month: teacherPayment.month,
+        year: teacherPayment.year,
+        totalLessons,
+        salaryPerLesson: teacherPayment.salaryPerLesson,
+        paidAmount: teacherPayment.paidAmount
+    }
     return {
         totalStudent: students.length,
         teachingClasses,
         closedClasses,
         upcomingClasses,
-        paymentInfo
+        paymentInfo,
+        activeClasses,
+        recentlySalary
     }
 }
 
 const getParentDashboard = async (parentId) => {
-    const parent = await Parent.findById(parentId)
+    const parent = await Parent.findById(parentId).populate({ path: 'studentIds', populate: 'userId' })
     const studentIds = parent.studentIds.map(item => new mongoose.Types.ObjectId(item))
     const paymentInfo = await Payment.aggregate([
         { $match: { studentId: { $in: studentIds } } },
@@ -122,22 +165,80 @@ const getParentDashboard = async (parentId) => {
         }
     ])
 
+    const studentPayments = await Payment.aggregate([
+        { $match: { studentId: { $in: studentIds } } },
+        {
+            $group: {
+                _id: "$studentId",
+                totalAmount: { $sum: "$finalAmount" },
+                totalPaidAmount: { $sum: "$paidAmount" },
+                totalUnPaidAmount: { $sum: { $subtract: ['$finalAmount', '$paidAmount'] } },
+            }
+        },
+        {
+            $lookup: {
+                from: 'students',
+                localField: '_id',
+                foreignField: '_id',
+                as: 'studentInfo'
+            }
+        },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'studentInfo.userId',
+                foreignField: '_id',
+                as: 'userInfo'
+            }
+        },
+        {
+            $project: {
+                studentId: "$_id",
+                studentName: { $arrayElemAt: ["$userInfo.name", 0] },
+                studentEmail: { $arrayElemAt: ["$userInfo.email", 0] },
+                totalAmount: 1,
+                totalPaidAmount: 1,
+                totalUnPaidAmount: 1,
+                _id: 0
+            }
+        },
+    ])
+
     return {
         totalChildren: parent.studentIds.length,
-        paymentInfo
+        paymentInfo: paymentInfo[0],
+        studentPayments
     }
 }
 
 const getStudentDashboard = async (studentId) => {
-    const student = await Student.findById(studentId)
+    const student = await Student.findById(studentId).populate({
+        path: 'classes',
+        populate: {
+            path: 'classId',
+            populate: {
+                path: 'teacherId',
+                populate: 'userId'
+            }
+        }
+    })
     const activeClasses = student.classes.filter(item => item.status === 'active').length
     const completedClasses = student.classes.filter(item => item.status === 'completed').length
     const attendance = await studentService.getStudentAttendance(studentId)
+
+    const classList = student.classes.map(item => ({
+        className: item.classId.name,
+        room: item.classId.room,
+        schedule: item.classId.schedule,
+        teacherName: item.classId.teacherId.userId.name,
+        status: item.status
+    }))
     return {
         totalClasses: student.classes.length,
         activeClasses,
         completedClasses,
-        attendance: attendance.attendanceStats
+        attendance: attendance.attendanceStats,
+        classList
     }
 }
 

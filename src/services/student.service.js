@@ -347,175 +347,197 @@ const getStudentSchedule = async (studentId) => {
 };
 
 /**
- * Get monthly student enrollment changes statistics
+ * Get monthly student increase/decrease statistics
  * @param {Object} filter
  * @param {number} filter.year - Year to filter by
- * @param {number} filter.month - Number of months to show
- * @param {ObjectId} filter.classId - Filter by specific class
+ * @param {number} filter.month - Month to filter by (1-12)
+ * @param {Date} filter.startDate - Start date for custom range
+ * @param {Date} filter.endDate - End date for custom range
  * @returns {Promise<Object>}
  */
 const getMonthlyStudentChanges = async (filter = {}) => {
-    const { year, month, classId } = filter;
+    try {
+        const { year, month, startDate, endDate } = filter;
 
-    // Determine date range
-    let dateRange = {
-        $gte: new Date(year, month - 1, 1),
-        $lte: new Date(year, month, 1)
-    };
+        // Determine date range
+        let dateFilter = {};
 
-    // Build match stage for aggregation
-    const matchStage = {
-        'classes.enrollmentDate': dateRange
-    };
+        if (year && month) {
+            // Filter by specific year and month
+            dateFilter = {
+                $gte: new Date(year, month - 1, 1), // First day of the month
+                $lte: new Date(year, month, 0, 23, 59, 59) // Last day of the month
+            };
+        } else if (year) {
+            // Filter by specific year
+            dateFilter = {
+                $gte: new Date(year, 0, 1), // January 1st
+                $lte: new Date(year, 11, 31, 23, 59, 59) // December 31st
+            };
+        } else if (startDate && endDate) {
+            // Custom date range
+            dateFilter = {
+                $gte: new Date(startDate),
+                $lte: new Date(endDate)
+            };
+        } else {
+            // Default to current year
+            const currentYear = new Date().getFullYear();
+            dateFilter = {
+                $gte: new Date(currentYear, 0, 1),
+                $lte: new Date(currentYear, 11, 31, 23, 59, 59)
+            };
+        }
 
-    if (classId) {
-        matchStage['classes.classId'] = new mongoose.Types.ObjectId(classId);
-    }
-
-    // Aggregation pipeline to get monthly enrollment statistics
-    const enrollmentStats = await Student.aggregate([
-        { $unwind: '$classes' },
-        { $match: matchStage },
-        {
-            $group: {
-                _id: {
-                    year: { $year: '$classes.enrollmentDate' },
-                    month: { $month: '$classes.enrollmentDate' },
-                    classId: '$classes.classId'
-                },
-                newEnrollments: { $sum: 1 },
-                students: {
-                    $push: {
-                        studentId: '$_id',
-                        enrollmentDate: '$classes.enrollmentDate',
-                        status: '$classes.status',
-                        discountPercent: '$classes.discountPercent'
-                    }
+        // Aggregation for student increase (new registrations based on createdAt)
+        const increaseAggregation = await Student.aggregate([
+            {
+                $match: {
+                    createdAt: dateFilter
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$createdAt" },
+                        month: { $month: "$createdAt" }
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { "_id.year": 1, "_id.month": 1 }
+            },
+            {
+                $project: {
+                    year: "$_id.year",
+                    month: "$_id.month",
+                    count: 1,
+                    _id: 0
                 }
             }
-        },
-        {
-            $lookup: {
-                from: 'classes',
-                localField: '_id.classId',
-                foreignField: '_id',
-                as: 'classInfo'
-            }
-        },
-        {
-            $unwind: {
-                path: '$classInfo',
-                preserveNullAndEmptyArrays: true
-            }
-        },
-        {
-            $group: {
-                _id: {
-                    year: '$_id.year',
-                    month: '$_id.month'
-                },
-                totalNewEnrollments: { $sum: '$newEnrollments' },
-                classesByMonth: {
-                    $push: {
-                        classId: '$_id.classId',
-                        className: '$classInfo.name',
-                        classGrade: '$classInfo.grade',
-                        classSection: '$classInfo.section',
-                        newEnrollments: '$newEnrollments',
-                        students: '$students'
+        ]);
+
+        // Aggregation for student decrease (soft deleted students based on deletedAt)
+        const decreaseAggregation = await Student.aggregate([
+            {
+                $match: {
+                    deleted: true,
+                    deletedAt: {
+                        $exists: true,
+                        ...dateFilter
                     }
                 }
+            },
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$deletedAt" },
+                        month: { $month: "$deletedAt" }
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { "_id.year": 1, "_id.month": 1 }
+            },
+            {
+                $project: {
+                    year: "$_id.year",
+                    month: "$_id.month",
+                    count: 1,
+                    _id: 0
+                }
             }
-        },
-        {
-            $sort: {
-                '_id.year': 1,
-                '_id.month': 1
-            }
-        }
-    ]);
+        ]);
 
-    // Get withdrawal statistics (students who changed status from active to completed)
-    const withdrawalStats = await Student.aggregate([
-        { $unwind: '$classes' },
-        {
-            $match: {
-                'classes.status': 'completed',
-                'classes.enrollmentDate': dateRange
+        // Also check for students with status changes to 'inactive', 'withdrawn', or 'dropped'
+        const statusChangeAggregation = await Student.aggregate([
+            {
+                $unwind: "$classes"
+            },
+            {
+                $match: {
+                    "classes.status": "closed",
+                    "classes.updatedAt": dateFilter
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$classes.updatedAt" },
+                        month: { $month: "$classes.updatedAt" },
+                        studentId: "$_id"
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        year: "$_id.year",
+                        month: "$_id.month"
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { "_id.year": 1, "_id.month": 1 }
+            },
+            {
+                $project: {
+                    year: "$_id.year",
+                    month: "$_id.month",
+                    count: 1,
+                    _id: 0
+                }
             }
-        },
-        {
-            $group: {
-                _id: {
-                    year: { $year: '$classes.enrollmentDate' },
-                    month: { $month: '$classes.enrollmentDate' }
-                },
-                totalCompletions: { $sum: 1 }
+        ]);
+
+        // Combine decrease data (soft deletes + status changes)
+        const combinedDecrease = [...decreaseAggregation];
+
+        // Add status change counts to decrease data
+        statusChangeAggregation.forEach(statusChange => {
+            const existing = combinedDecrease.find(
+                item => item.year === statusChange.year && item.month === statusChange.month
+            );
+
+            if (existing) {
+                existing.count += statusChange.count;
+            } else {
+                combinedDecrease.push(statusChange);
             }
-        },
-        {
-            $sort: {
-                '_id.year': 1,
-                '_id.month': 1
-            }
-        }
-    ]);
+        });
 
-    // Transform data into monthly format
-    const monthlyData = {};
-    const monthNames = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-    ];
+        // Sort combined decrease data
+        combinedDecrease.sort((a, b) => {
+            if (a.year !== b.year) return a.year - b.year;
+            return a.month - b.month;
+        });
 
-    // Initialize monthly data
-    enrollmentStats.forEach(stat => {
-        const monthKey = `${stat._id.year}-${stat._id.month.toString().padStart(2, '0')}`;
-        const monthName = monthNames[stat._id.month - 1];
+        // Calculate summary statistics
+        const totalIncrease = increaseAggregation.reduce((sum, item) => sum + item.count, 0);
+        const totalDecrease = combinedDecrease.reduce((sum, item) => sum + item.count, 0);
+        const netChange = totalIncrease - totalDecrease;
 
-        monthlyData[monthKey] = {
-            year: stat._id.year,
-            month: stat._id.month,
-            monthName: monthName,
-            newEnrollments: stat.totalNewEnrollments,
-            completions: 0,
-            netChange: stat.totalNewEnrollments,
-            classesByMonth: stat.classesByMonth
+        return {
+            summary: {
+                totalIncrease,
+                totalDecrease,
+                netChange,
+                period: {
+                    startDate: dateFilter.$gte,
+                    endDate: dateFilter.$lte
+                }
+            },
+            increase: increaseAggregation,
+            decrease: combinedDecrease
         };
-    });
 
-    // Add withdrawal data
-    withdrawalStats.forEach(stat => {
-        const monthKey = `${stat._id.year}-${stat._id.month.toString().padStart(2, '0')}`;
-        if (monthlyData[monthKey]) {
-            monthlyData[monthKey].completions = stat.totalCompletions;
-            monthlyData[monthKey].netChange = monthlyData[monthKey].newEnrollments - stat.totalCompletions;
-        }
-    });
-
-    // Convert to array and sort
-    const monthlyArray = Object.keys(monthlyData)
-        .sort()
-        .map(key => monthlyData[key]);
-
-    // Calculate totals
-    const totalNewEnrollments = monthlyArray.reduce((sum, month) => sum + month.newEnrollments, 0);
-    const totalCompletions = monthlyArray.reduce((sum, month) => sum + month.completions, 0);
-    const netChange = totalNewEnrollments - totalCompletions;
-
-    return {
-        summary: {
-            totalNewEnrollments,
-            totalCompletions,
-            netChange,
-            period: {
-                startDate: dateRange.$gte,
-                endDate: dateRange.$lte
-            }
-        },
-        monthlyData: monthlyArray,
-        totalMonths: monthlyArray.length
-    };
+    } catch (error) {
+        console.error('Error in getMonthlyStudentChanges:', error);
+        throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to get monthly student changes');
+    }
 };
 
 module.exports = {

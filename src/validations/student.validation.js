@@ -64,6 +64,12 @@ const getMonthlyChanges = {
     query: Joi.object().keys({
         year: Joi.number().integer().min(2020).max(2030),
         month: Joi.number().integer().min(1).max(12),
+        startDate: Joi.date(),
+        endDate: Joi.date().when('startDate', {
+            is: Joi.exist(),
+            then: Joi.date().greater(Joi.ref('startDate')).required(),
+            otherwise: Joi.date()
+        }),
         classId: Joi.string().custom(objectId)
     })
 };

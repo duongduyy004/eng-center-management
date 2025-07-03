@@ -68,13 +68,17 @@ const createClass = async (classBody) => {
 };
 
 const updateClass = async (classId, classUpdate) => {
-    const year = classUpdate.schedule.startDate.getFullYear()
-
     const aClass = await Class.findById(classId)
     if (!aClass) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Class not found')
     }
-    Object.assign(aClass, { ...classUpdate, year })
+
+    if (classUpdate.schedule) {
+        const year = classUpdate.schedule?.startDate.getFullYear()
+        Object.assign(aClass, { ...classUpdate, year })
+    }
+
+    Object.assign(aClass, classUpdate)
     await aClass.save()
     return aClass
 }

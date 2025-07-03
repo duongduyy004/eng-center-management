@@ -10,7 +10,7 @@ const getPayments = {
         year: Joi.number().integer().min(2020),
         startMonth: Joi.number().integer().min(1).max(12),
         endMonth: Joi.number().integer().min(1).max(12),
-        status: Joi.string().valid('pending', 'partial', 'paid', 'overdue'),
+        status: Joi.string().valid('pending', 'partial', 'paid'),
         limit: Joi.number().integer(),
         page: Joi.number().integer()
     })

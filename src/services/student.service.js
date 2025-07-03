@@ -448,31 +448,56 @@ const getMonthlyStudentChanges = async (filter = {}) => {
             }
         ]);
 
-        // Also check for students with status changes to 'inactive', 'withdrawn', or 'dropped'
         const statusChangeAggregation = await Student.aggregate([
             {
-                $unwind: "$classes"
+                $match: {
+                    updatedAt: dateFilter,
+                    "classes.0": { $exists: true }
+                }
             },
             {
-                "classes.status": "completed",
-                updatedAt: dateFilter
-            },
-            {
-                $group: {
-                    _id: {
-                        year: { $year: "$classes.updatedAt" },
-                        month: { $month: "$classes.updatedAt" },
-                        studentId: "$_id"
+                $addFields: {
+                    allClassesCompleted: {
+                        $allElementsTrue: {
+                            $map: {
+                                input: "$classes",
+                                as: "class",
+                                in: { $eq: ["$$class.status", "completed"] }
+                            }
+                        }
+                    },
+                    totalClasses: { $size: "$classes" },
+                    completedClassesCount: {
+                        $size: {
+                            $filter: {
+                                input: "$classes",
+                                as: "class",
+                                cond: { $eq: ["$$class.status", "completed"] }
+                            }
+                        }
                     }
+                }
+            },
+            {
+                $match: {
+                    allClassesCompleted: true,
+                    totalClasses: { $gte: 1 }
                 }
             },
             {
                 $group: {
                     _id: {
-                        year: "$_id.year",
-                        month: "$_id.month"
+                        year: { $year: "$updatedAt" },
+                        month: { $month: "$updatedAt" }
                     },
-                    count: { $sum: 1 }
+                    count: { $sum: 1 },
+                    students: {
+                        $push: {
+                            studentId: "$_id",
+                            totalClasses: "$totalClasses",
+                            completedClasses: "$completedClassesCount"
+                        }
+                    }
                 }
             },
             {

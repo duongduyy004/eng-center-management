@@ -62,7 +62,7 @@ const userSchema = mongoose.Schema(
 // add plugin that converts mongoose to json
 userSchema.plugin(toJSON);
 userSchema.plugin(paginate);
-userSchema.plugin(softDelete, { indexFields: ['deletedAt'], overrideMethods: true })
+userSchema.plugin(softDelete, { overrideMethods: true, deletedAt: true })
 
 /**
  * Check if email is taken

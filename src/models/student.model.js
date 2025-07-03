@@ -32,7 +32,7 @@ const studentSchema = new mongoose.Schema({
 
 studentSchema.plugin(toJSON);
 studentSchema.plugin(paginate);
-studentSchema.plugin(softDelete, { indexFields: ['deletedAt'], overrideMethods: true })
+studentSchema.plugin(softDelete, { overrideMethods: true, deletedAt: true })
 
 const Student = mongoose.model('Student', studentSchema)
 

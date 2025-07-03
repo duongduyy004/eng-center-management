@@ -128,7 +128,7 @@ const getStudentAttendance = async (studentId, filter = {}) => {
     }
 
     // Get student's active classes
-    const activeClasses = student.classes.filter(c => c.status === 'active');
+    const activeClasses = student.classes
     if (activeClasses.length === 0) {
         return {
             student: {
@@ -170,7 +170,7 @@ const getStudentAttendance = async (studentId, filter = {}) => {
 
     // Get attendance records
     const attendanceRecords = await Attendance.find(attendanceQuery)
-        .populate('classId', 'name grade section year')
+        .populate('classId', 'name grade section year status')
         .sort({ date: -1 });
 
     // Process attendance data
@@ -195,7 +195,8 @@ const getStudentAttendance = async (studentId, filter = {}) => {
                     name: record.classId.name,
                     grade: record.classId.grade,
                     section: record.classId.section,
-                    year: record.classId.year
+                    year: record.classId.year,
+                    status: record.classId.status
                 },
                 status: studentAttendance.status,
                 note: studentAttendance.note || '',
@@ -242,11 +243,7 @@ const getStudentAttendance = async (studentId, filter = {}) => {
         },
         absentSessionsDetails: absentSessions_details,
         detailedAttendance: detailedAttendance,
-        period: {
-            startDate: filter.startDate || null,
-            endDate: filter.endDate || null,
-            totalRecords: attendanceRecords.length
-        }
+        totalRecords: attendanceRecords.length
     };
 };
 
@@ -457,10 +454,8 @@ const getMonthlyStudentChanges = async (filter = {}) => {
                 $unwind: "$classes"
             },
             {
-                $match: {
-                    "classes.status": "closed",
-                    "classes.updatedAt": dateFilter
-                }
+                "classes.status": "completed",
+                updatedAt: dateFilter
             },
             {
                 $group: {

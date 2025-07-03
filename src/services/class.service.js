@@ -60,18 +60,21 @@ const getClassById = async (classId) => {
  * @returns {Promise<Class>}
  */
 const createClass = async (classBody) => {
-    if (classBody && await isClassExist(classBody?.grade, classBody?.section, classBody?.year) !== null) {
+    const year = classBody.schedule.startDate.getFullYear()
+    if (classBody && await isClassExist(classBody?.grade, classBody?.section, year) !== null) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Class already exsit')
     }
-    return await Class.create(classBody)
+    return await Class.create({ ...classBody, year })
 };
 
 const updateClass = async (classId, classUpdate) => {
+    const year = classUpdate.schedule.startDate.getFullYear()
+
     const aClass = await Class.findById(classId)
     if (!aClass) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Class not found')
     }
-    Object.assign(aClass, classUpdate)
+    Object.assign(aClass, { ...classUpdate, year })
     await aClass.save()
     return aClass
 }

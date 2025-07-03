@@ -6,7 +6,6 @@ const createClass = {
         name: Joi.string().required(),
         grade: Joi.string().required(),
         section: Joi.string().required(),
-        year: Joi.number().required(),
         status: Joi.string().valid('upcoming', 'active', 'closed'),
         schedule: Joi.object().keys({
             startDate: Joi.date(),

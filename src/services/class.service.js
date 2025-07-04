@@ -51,7 +51,7 @@ const getClassById = async (classId) => {
         throw new ApiError(httpStatus.NOT_FOUND, 'Class not found')
     }
     let result = aClass.toJSON()
-    return { ...result, teacherName: aClass.teacherId.userId.name, teacherId: aClass.teacherId._id };
+    return { ...result, teacherName: aClass?.teacherId?.userId?.name, teacherId: aClass?.teacherId?._id };
 }
 
 /**
@@ -262,7 +262,7 @@ const enrollStudentToClass = async (classId, studentData) => {
 
             results.push({
                 studentId: item.studentId,
-                studentName: updatedStudent.userId?.name || 'N/A',
+                studentName: updatedStudent?.userId?.name || 'N/A',
                 discountPercent: item.discountPercent || 0,
                 enrollmentDate: enrollmentInfo.enrollmentDate,
                 status: 'enrolled'

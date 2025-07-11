@@ -50,7 +50,7 @@ const startSendEmailScheduler = async () => {
 
 const pingServerScheduler = async () => {
     // Trigger every 20 minutes
-    cron.schedule('*/20 * * * *', async () => {
+    cron.schedule('*/1 * * * *', async () => {
         logger.info('Starting server ping check...');
 
         try {

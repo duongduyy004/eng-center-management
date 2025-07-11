@@ -1,12 +1,12 @@
 const cron = require('node-cron');
+const https = require('https');
 const { classService, parentService } = require('../services');
 const logger = require('../config/logger');
+const config = require('../config/config');
 
-/**
- * Start the class status scheduler
- */
+//Update class status scheduler
 const startClassStatusScheduler = async () => {
-    // Chạy mỗi ngày lúc 0:00 sáng
+    // Trigger at 0:00 AM everyday
     cron.schedule('0 0 * * *', async () => {
         logger.info('Starting scheduled class status update...');
 
@@ -28,8 +28,9 @@ const startClassStatusScheduler = async () => {
     logger.info('Class status scheduler started successfully');
 };
 
+//Auto send email to parent scheduler
 const startSendEmailScheduler = async () => {
-    //Chạy mỗi lần vào 7:00 ngày 1 hàng tháng
+    // Trigger at 7:00 AM on 1st every month
     cron.schedule('0 7 1 * *', async () => {
         logger.info('Starting scheduled send email to parent...');
 
@@ -47,7 +48,52 @@ const startSendEmailScheduler = async () => {
     logger.info('Email send scheduler started successfully');
 }
 
+const pingServerScheduler = async () => {
+    // Trigger every 20 minutes
+    cron.schedule('*/20 * * * *', async () => {
+        logger.info('Starting server ping check...');
+
+        try {
+            await pingServer();
+            logger.info('Server ping successful');
+        } catch (error) {
+            logger.error('Server ping failed:', error.message);
+            // Optional: Add retry logic or alert mechanism here
+        }
+    }, {
+        scheduled: true,
+        timezone: "Asia/Ho_Chi_Minh"
+    });
+
+    logger.info('Server ping scheduler started successfully - pinging every 20 minutes');
+};
+
+const pingServer = () => {
+    const url = process.env.BACKEND_URL;
+    return new Promise((resolve, reject) => {
+        const req = https.get(url, (res) => {
+            if (res.statusCode === 200) {
+                resolve({
+                    statusCode: 200,
+                    body: 'Server pinged successfully',
+                });
+            } else {
+                reject(
+                    new Error(`Server ping failed with status code: ${res.statusCode}`)
+                );
+            }
+        });
+
+        req.on('error', (error) => {
+            reject(error);
+        });
+
+        req.end();
+    });
+};
+
 module.exports = {
     startClassStatusScheduler,
-    startSendEmailScheduler
+    startSendEmailScheduler,
+    pingServerScheduler
 }

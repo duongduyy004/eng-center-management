@@ -16,7 +16,7 @@ const ApiError = require('./utils/ApiError');
 const createDefaultAdmin = require('./utils/createDefaultAdmin');
 const logger = require('./config/logger');
 const fileUpload = require('express-fileupload');
-const { startClassStatusScheduler, startSendEmailScheduler } = require('./utils/scheduler');
+const { startClassStatusScheduler, startSendEmailScheduler, pingServerScheduler } = require('./utils/scheduler');
 
 const app = express();
 
@@ -109,6 +109,7 @@ const initializeAdmin = async () => {
 (() => {
   startClassStatusScheduler();
   startSendEmailScheduler();
+  pingServerScheduler();
 })()
 app.on('ready', initializeAdmin);
 

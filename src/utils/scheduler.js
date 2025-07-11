@@ -49,7 +49,7 @@ const startSendEmailScheduler = async () => {
 }
 
 const pingServerScheduler = async () => {
-    // Trigger every 20 minutes
+    // Trigger every 14 minutes
     cron.schedule('*/14 * * * *', async () => {
         logger.info('Starting server ping check...');
 
@@ -65,7 +65,7 @@ const pingServerScheduler = async () => {
         timezone: "Asia/Ho_Chi_Minh"
     });
 
-    logger.info('Server ping scheduler started successfully - pinging every 20 minutes');
+    logger.info('Server ping scheduler started successfully - pinging every 14 minutes');
 };
 
 const pingServer = () => {

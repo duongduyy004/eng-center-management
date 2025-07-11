@@ -51,14 +51,9 @@ const startSendEmailScheduler = async () => {
 const pingServerScheduler = async () => {
     // Trigger every 14 minutes
     cron.schedule('*/14 * * * *', async () => {
-        logger.info('Starting server ping check...');
-
         try {
             await pingServer();
-            logger.info('Server ping successful');
         } catch (error) {
-            logger.error('Server ping failed:', error.message);
-            // Optional: Add retry logic or alert mechanism here
         }
     }, {
         scheduled: true,

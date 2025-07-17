@@ -51,6 +51,7 @@
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.41.3",
     "compression": "^1.7.4",
+    "config": "^1.31.0",
     "cors": "^2.8.5",
     "cross-env": "^7.0.0",
     "dotenv": "^10.0.0",
@@ -62,6 +63,7 @@
     "http-status": "^1.4.0",
     "joi": "^17.3.0",
     "jsonwebtoken": "^8.5.1",
+    "md5": "^2.2.1",
     "moment": "^2.24.0",
     "mongoose": "^8.15.1",
     "mongoose-delete": "^1.0.2",
@@ -78,6 +80,7 @@
     "swagger-jsdoc": "^6.0.8",
     "swagger-ui-express": "^4.1.6",
     "validator": "^13.0.0",
+    "vnpay": "^2.4.0",
     "winston": "^3.2.1",
     "xss-clean": "^0.1.1"
   },

@@ -17,6 +17,11 @@ router
     .route('/:paymentId/record')
     .post(auth('managePayments'), validate(paymentValidation.recordPayment), paymentController.recordPayment);
 
+router.route('/ipn')
+    .get((req, res) => {
+        console.log('check query', req.query)
+        console.log('check ipn')
+    })
 router
     .route('/:paymentId/reminder')
     .post(auth('managePayments'), validate(paymentValidation.sendPaymentReminder), paymentController.sendPaymentReminder);

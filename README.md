@@ -11,7 +11,8 @@ A comprehensive Node.js RESTful API for managing English language centers. This 
 - **Class Management**: Class creation, scheduling, student enrollment, teacher assignment
 - **Parent Management**: Parent profiles linked to students with controlled access
 - **Attendance Management**: Digital attendance tracking with automatic payment calculations
-- **Payment Management**: Student fee tracking, payment history, automated calculations
+- **Payment Management**: Student fee tracking, payment history, automated calculations with VNPay integration
+- **VNPay Integration**: Secure online payment processing for student fees
 - **Teacher Payment Management**: Salary calculations based on lessons taught
 - **Announcements**: System-wide communication management
 
@@ -26,6 +27,7 @@ A comprehensive Node.js RESTful API for managing English language centers. This 
 - **Email Service**: Automated email notifications for verification, password reset, and system updates
 - **OTP System**: Secure One-Time Password generation and verification for password reset
 - **Statistics & Analytics**: Monthly enrollment changes, attendance reports, payment insights
+- **VNPay Payment Gateway**: Secure online payment processing with transaction verification
 - **Flexible Date Parsing**: Support for multiple date formats (DD/MM/YYYY, etc.)
 - **Schedule Management**: Student and teacher schedule viewing
 - **Automatic Calculations**: Payment amounts, discounts, teacher salaries
@@ -38,6 +40,7 @@ A comprehensive Node.js RESTful API for managing English language centers. This 
 - **Backend**: Node.js, Express.js
 - **Database**: MongoDB with Mongoose ODM
 - **Authentication**: JWT with Passport.js
+- **Payment Gateway**: VNPay integration
 - **File Storage**: Cloudinary
 - **Documentation**: Swagger UI
 - **Testing**: Jest
@@ -68,6 +71,7 @@ src/
 - Node.js (>= 12.0.0)
 - MongoDB
 - Cloudinary account (for file uploads)
+- VNPay merchant account (for payment processing)
 - SMTP Email Service (Gmail recommended for email verification and password reset)
 
 ### Installation
@@ -128,6 +132,7 @@ The system automatically creates a default admin account on first run:
 
 ### Automatic Calculations
 - **Student Payments**: Automatically calculated based on attended lessons and discount percentage
+- **VNPay Payment Processing**: Secure online payment with automatic payment record updates
 - **Teacher Salaries**: Calculated based on completed lessons and per-lesson rate
 - **Attendance Impact**: Attendance directly affects payment calculations
 

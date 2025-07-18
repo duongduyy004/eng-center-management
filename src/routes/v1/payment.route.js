@@ -16,9 +16,6 @@ router.route('/total')
 router.route('/:paymentId/record')
     .patch(auth('managePayments'), validate(paymentValidation.recordPayment), paymentController.recordPayment)
 
-router.route('/return-url')
-    .get(paymentController.verifyReturnURL)
-
 router.route('/ipn')
     .get(paymentController.verifyIPN)
 router

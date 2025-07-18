@@ -21,7 +21,7 @@ router.route('/ipn')
     .get((req, res) => {
         console.log('check query', req.query)
         console.log('check ipn')
-        res.send(req.query)
+        res.status(200).json(req.query)
     })
 router
     .route('/:paymentId/reminder')

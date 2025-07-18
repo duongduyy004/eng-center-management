@@ -71,8 +71,8 @@ const getPaymentById = async (id) => {
  * @returns {Promise<Payment>}
  */
 const recordPayment = async (paymentId, paymentData) => {
-    const { amount, method = 'cash', note } = paymentData;
     const payment = await getPaymentById(paymentId);
+    let { amount, method = 'cash', note = `Thanh toán học phí tháng ${payment.month}/${payment.year}` } = paymentData;
 
     if (payment.status === 'paid') {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Payment is already fully paid');
@@ -85,6 +85,8 @@ const recordPayment = async (paymentId, paymentData) => {
     if (payment.paidAmount + +amount > payment.finalAmount) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Payment amount exceeds remaining balance');
     }
+
+    if (note === '') note = `Thanh toán học phí tháng ${payment.month}/${payment.year}`
 
     // Add to payment history
     payment.paymentHistory.push({

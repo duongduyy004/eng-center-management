@@ -22,9 +22,8 @@ const recordPayment = {
     }),
     body: Joi.object().keys({
         amount: Joi.number().min(0.01).required(),
-        method: Joi.string().valid('cash', 'bank_transfer').default('cash'),
+        method: Joi.string().valid('cash', 'bank_transfer', 'card').default('cash'),
         note: Joi.string().allow('').default(''),
-        receivedBy: Joi.string().custom(objectId).required()
     })
 };
 

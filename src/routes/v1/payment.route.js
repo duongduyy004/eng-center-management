@@ -13,6 +13,9 @@ router
 router.route('/total')
     .get(auth('getPayments'), paymentController.getTotalPayment)
 
+router.route('/:paymentId/record')
+    .patch(auth('managePayments'), validate(paymentValidation.recordPayment), paymentController.recordPayment)
+
 router.route('/return-url')
     .get(paymentController.verifyReturnURL)
 

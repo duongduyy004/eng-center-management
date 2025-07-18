@@ -19,9 +19,9 @@ const getPayments = catchAsync(async (req, res) => {
 });
 
 const recordPayment = catchAsync(async (req, res) => {
-    const ipAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const payemntData = { ...req.body, ipAddr }
-    const payment = await paymentService.recordPayment(payemntData);
+    const { paymentId } = req.params
+    const payemntData = req.body
+    const payment = await paymentService.recordPayment(paymentId, payemntData);
     res.send(payment);
 });
 

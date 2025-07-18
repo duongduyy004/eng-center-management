@@ -47,12 +47,14 @@ const deleteChild = catchAsync(async (req, res) => {
 })
 
 const payTuition = catchAsync(async (req, res) => {
-    const { paymentId, amount, method, note } = req.body
-    const result = await paymentService.recordPayment(paymentId, { amount, method, note })
-    res.status(httpStatus.OK).json({
-        message: 'Payment was successfully',
-        data: result
-    })
+    let ipAddr = req.headers['x-forwarded-for'] ||
+        req.connection.remoteAddress ||
+        req.socket.remoteAddress ||
+        req.connection.socket.remoteAddress;
+
+    const paymentData = { ...req.body, ipAddr };
+    const paymentUrl = paymentService.redirectVNPay(paymentData);
+    res.send(paymentUrl)
 })
 
 module.exports = {

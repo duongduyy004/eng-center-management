@@ -11,6 +11,7 @@ const attendanceRoute = require('./attendance.route')
 const teacherPaymentRoute = require('./teacherPayment.route')
 const announcementRoute = require('./announcement.route')
 const dashboardRoute = require('./dasboard.route')
+const vnPayRoute = require('./vnpay.route')
 const config = require('../../config/config');
 
 const router = express.Router();
@@ -59,6 +60,10 @@ const defaultRoutes = [
   {
     path: '/dashboard',
     route: dashboardRoute
+  },
+  {
+    path: '/vnpay',
+    route: vnPayRoute
   }
 ];
 

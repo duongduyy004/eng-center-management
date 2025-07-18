@@ -12,3 +12,4 @@ module.exports.teacherPaymentService = require('./teacherPayment.service');
 module.exports.announcementService = require('./announcement.service');
 module.exports.otpService = require('./otp.service')
 module.exports.dashboardSerivce = require('./dashboard.service')
+module.exports.vnpayService = require('./vnpay.service')

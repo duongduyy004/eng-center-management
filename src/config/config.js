@@ -29,6 +29,11 @@ const envVarsSchema = Joi.object()
     DEFAULT_ADMIN_EMAIL: Joi.string().email().default('admin@gmail.com'),
     DEFAULT_ADMIN_PASSWORD: Joi.string().min(6).default('admin123'),
     DEFAULT_ADMIN_NAME: Joi.string().default('Bố'),
+    vnp_TmnCode: Joi.string(),
+    vnp_HashSecret: Joi.string(),
+    vnp_Url: Joi.string(),
+    vnp_Api: Joi.string(),
+    vnp_ReturnUrl: Joi.string()
   })
   .unknown();
 
@@ -73,5 +78,12 @@ module.exports = {
     email: envVars.DEFAULT_ADMIN_EMAIL,
     password: envVars.DEFAULT_ADMIN_PASSWORD,
     name: envVars.DEFAULT_ADMIN_NAME,
+  },
+  vnpay: {
+    vnp_TmnCode: envVars.vnp_TmnCode,
+    vnp_HashSecret: envVars.vnp_HashSecret,
+    vnp_Url: envVars.vnp_Url,
+    vnp_Api: envVars.vnp_Api,
+    vnp_ReturnUrl: envVars.vnp_ReturnUrl
   }
 };

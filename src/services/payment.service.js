@@ -2,6 +2,8 @@ const httpStatus = require('http-status');
 const { Payment, Student, Class, Attendance } = require('../models');
 const ApiError = require('../utils/ApiError');
 const logger = require('../config/logger');
+const vnpayService = require('./vnpay.service');
+const { default: mongoose } = require('mongoose');
 
 const getTotalPayment = async () => {
 
@@ -69,19 +71,12 @@ const getPaymentById = async (id) => {
  * @returns {Promise<Payment>}
  */
 const recordPayment = async (paymentId, paymentData) => {
-    const { amount, method = 'cash', note = '' } = paymentData;
-
+    const { amount, method = 'cash', note } = paymentData;
     const payment = await getPaymentById(paymentId);
-    if (!payment) {
-        throw new ApiError(httpStatus.NOT_FOUND, 'Payment not found');
-    }
-
-    const student = await Student.findById(payment.studentId.parentId)
 
     if (payment.status === 'paid') {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Payment is already fully paid');
     }
-
     // Check if payment amount is valid
     if (amount <= 0) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Payment amount must be greater than 0');
@@ -106,6 +101,10 @@ const recordPayment = async (paymentId, paymentData) => {
     await payment.save();
     return payment;
 };
+
+const redirectVNPay = (paymentData) => {
+    return vnpayService.createPaymentURL(paymentData.paymentId, paymentData)
+}
 
 /**
  * Send payment reminders (placeholder for future implementation)
@@ -229,5 +228,6 @@ module.exports = {
     recordPayment,
     sendPaymentReminder,
     autoUpdatePaymentRecords,
-    getTotalPayment
+    getTotalPayment,
+    redirectVNPay
 };

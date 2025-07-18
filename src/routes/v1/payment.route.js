@@ -13,16 +13,11 @@ router
 router.route('/total')
     .get(auth('getPayments'), paymentController.getTotalPayment)
 
-router
-    .route('/:paymentId/record')
-    .post(auth('managePayments'), validate(paymentValidation.recordPayment), paymentController.recordPayment);
+router.route('/return-url')
+    .get(paymentController.verifyReturnURL)
 
 router.route('/ipn')
-    .get((req, res) => {
-        console.log('check query', req.query)
-        console.log('check ipn')
-        res.status(200).json(req.query)
-    })
+    .get(paymentController.verifyIPN)
 router
     .route('/:paymentId/reminder')
     .post(auth('managePayments'), validate(paymentValidation.sendPaymentReminder), paymentController.sendPaymentReminder);

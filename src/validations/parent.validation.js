@@ -84,8 +84,8 @@ const payTuition = {
     body: Joi.object().keys({
         paymentId: Joi.string().custom(objectId).required(),
         amount: Joi.number().positive().required(),
-        method: Joi.string().valid('cash', 'bank_transfer', 'credit_card', 'online').required(),
-        note: Joi.string().trim()
+        bankCode: Joi.string().valid('VNBANK', 'VNPAYQR', 'INTCARD').required(),
+        language: Joi.string().trim()
     })
 };
 

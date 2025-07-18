@@ -15,7 +15,7 @@ router
 
 router
     .route('/pay-tuition')
-    .patch(auth('payTuition'), validate(parentValidation.payTuition), parentController.payTuition)
+    .patch(validate(parentValidation.payTuition), parentController.payTuition)
 
 router
     .route('/:parentId')

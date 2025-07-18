@@ -1,7 +1,6 @@
 const httpStatus = require('http-status');
 const { User } = require('../models');
 const ApiError = require('../utils/ApiError');
-const { cloudinary } = require('../config/cloudinary');
 const logger = require('../config/logger');
 const { deleteImageFromCloudinary } = require('../utils/cloudinary');
 

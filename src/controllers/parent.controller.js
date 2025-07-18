@@ -53,7 +53,7 @@ const payTuition = catchAsync(async (req, res) => {
         req.connection.socket.remoteAddress;
 
     const paymentData = { ...req.body, ipAddr };
-    const paymentUrl = paymentService.redirectVNPay(paymentData);
+    const paymentUrl = await paymentService.redirectVNPay(paymentData);
     res.send(paymentUrl)
 })
 

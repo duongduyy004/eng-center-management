@@ -2,7 +2,7 @@ const config = require('../config/config');
 const vnpay = require('../config/vnpay');
 const moment = require('moment');
 
-const createPaymentURL = (paymentId, payemntData) => {
+const createPaymentURL = async (paymentId, payemntData) => {
     let date = new Date();
     let createDate = moment(date).format('YYYYMMDDHHmmss');
 
@@ -14,7 +14,7 @@ const createPaymentURL = (paymentId, payemntData) => {
         vnp_ReturnUrl: returnUrl,
         vnp_BankCode: bankCode,
         vnp_Locale: lang || 'vn',
-        vnp_OrderInfo: `Thanh toan hoa don ${paymentId}`,
+        vnp_OrderInfo: `Thanh toán học phí tháng ${payemntData.month}/${payemntData.year}`,
         vnp_TxnRef: `${paymentId}.${createDate}`,
     })
     return (paymentUrl)
@@ -27,9 +27,7 @@ const verifyReturnURL = async (url_query) => {
     } else {
         console.log(`❌ Thanh toán ${paymentId} thất bại:`, verify.message);
     }
-
 }
-
 
 const verifyIPN = async (url_query) => {
     const verify = vnpay.verifyIpnCall(url_query)

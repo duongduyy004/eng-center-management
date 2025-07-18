@@ -102,8 +102,13 @@ const recordPayment = async (paymentId, paymentData) => {
     return payment;
 };
 
-const redirectVNPay = (paymentData) => {
-    return vnpayService.createPaymentURL(paymentData.paymentId, paymentData)
+const redirectVNPay = async (paymentData) => {
+    const payment = await getPaymentById(paymentData.paymentId);
+    return vnpayService.createPaymentURL(paymentData.paymentId, {
+        ...paymentData,
+        month: payment.month,
+        year: payment.year
+    })
 }
 
 /**
